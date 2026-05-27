@@ -1,6 +1,6 @@
 # 云海湾门禁卡片
 
-![version](https://img.shields.io/badge/version-v0.1.5-blue)
+![version](https://img.shields.io/badge/version-v0.1.8-blue)
 ![hacs](https://img.shields.io/badge/hacs-default-orange)
 ![ha-version](https://img.shields.io/badge/HA-2024.11.0%2B-41BDF5)
 
@@ -17,7 +17,7 @@
 ## 安装
 
 1. HACS → 仪表盘 → 右下角 → **自定义仓库**
-2. 填入仓库地址：`https://github.com/CelerPi/HA-UpperCoast-DoorLock-System`
+2. 填入仓库地址：`https://github.com/CelerPi/HA-UpperCoast-Doorlock-Card`
 3. 类别选择：**仪表盘**
 4. 搜索并下载 `云海湾门禁卡片`
 
@@ -50,3 +50,11 @@ building_id: building_1_a  # 可选，默认 building_1_a
 - Home Assistant 2024.11.0+
 - 已安装 `uppercoast_doorlock` 集成
 - 已安装 `uppercoast_doorlock` Addon
+
+## 相关仓库
+
+| 仓库 | 说明 |
+|------|------|
+| [HA-UpperCoast-Doorlock](https://github.com/CelerPi/HA-UpperCoast-Doorlock) | 主仓库，安装指南 |
+| [HA-UpperCoast-Doorlock-Integration](https://github.com/CelerPi/HA-UpperCoast-Doorlock-Integration) | 集成源码 |
+| [HA-UpperCoast-DoorLock-System](https://github.com/CelerPi/HA-UpperCoast-DoorLock-System) | Addon 源码 |

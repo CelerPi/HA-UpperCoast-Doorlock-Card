@@ -1,5 +1,12 @@
 import { LitElement, html, css } from 'https://esm.sh/lit@3.1.4';
 
+let ICON_URL = '';
+try {
+  ICON_URL = new URL('icon.png', import.meta.url).href;
+} catch (e) {
+  ICON_URL = '';
+}
+
 class DoorlockCard extends LitElement {
   static get properties() {
     return {
@@ -31,25 +38,33 @@ class DoorlockCard extends LitElement {
     return css`
       :host {
         display: block;
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        --doorlock-green: #34d399;
-        --doorlock-red: #f87171;
-        --doorlock-blue: #60a5fa;
-        --doorlock-gray: #6b7280;
-        --doorlock-bg: #0f172a;
-        --doorlock-card-bg: rgba(30, 41, 59, 0.7);
-        --doorlock-glass: rgba(255, 255, 255, 0.06);
-        --doorlock-border: rgba(255, 255, 255, 0.08);
+        font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
+        --vds-bg: #000000;
+        --vds-surface: rgba(28, 28, 30, 0.72);
+        --vds-glass: rgba(120, 120, 128, 0.16);
+        --vds-glass-hover: rgba(120, 120, 128, 0.24);
+        --vds-border: rgba(255, 255, 255, 0.08);
+        --vds-border-hover: rgba(255, 255, 255, 0.14);
+        --vds-text-primary: rgba(255, 255, 255, 0.92);
+        --vds-text-secondary: rgba(255, 255, 255, 0.55);
+        --vds-text-tertiary: rgba(255, 255, 255, 0.35);
+        --vds-blue: #0A84FF;
+        --vds-green: #30D158;
+        --vds-red: #FF453A;
+        --vds-orange: #FF9F0A;
+        --vds-yellow: #FFD60A;
       }
 
+      /* Card */
       .card {
-        background: var(--doorlock-card-bg);
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
-        border: 1px solid var(--doorlock-border);
-        border-radius: 20px;
+        background: var(--vds-surface);
+        backdrop-filter: blur(40px) saturate(180%);
+        -webkit-backdrop-filter: blur(40px) saturate(180%);
+        border: 1px solid var(--vds-border);
+        border-radius: 22px;
         overflow: hidden;
-        color: #f1f5f9;
+        color: var(--vds-text-primary);
+        box-shadow: 0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.06);
       }
 
       /* Header */
@@ -58,71 +73,93 @@ class DoorlockCard extends LitElement {
         justify-content: space-between;
         align-items: center;
         padding: 18px 20px 14px;
-        border-bottom: 1px solid var(--doorlock-border);
+        border-bottom: 1px solid var(--vds-border);
       }
       .card-title {
         display: flex;
         align-items: center;
-        gap: 10px;
+        gap: 12px;
       }
       .card-title-icon {
-        width: 36px;
-        height: 36px;
-        background: linear-gradient(135deg, #34d399 0%, #059669 100%);
-        border-radius: 10px;
+        width: 38px;
+        height: 38px;
+        background: var(--vds-green);
+        border-radius: 12px;
+        position: relative;
+        overflow: hidden;
+        font-size: 14px;
+        font-weight: 700;
+        color: #000;
+        letter-spacing: 0.5px;
+      }
+      .card-title-icon span {
+        position: relative;
+        z-index: 1;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 18px;
+        width: 100%;
+        height: 100%;
+      }
+      .card-title-icon img {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        z-index: 2;
+        border-radius: 12px;
       }
       .card-title-text {
-        font-size: 15px;
+        font-size: 16px;
         font-weight: 600;
-        color: #f1f5f9;
+        color: var(--vds-text-primary);
+        letter-spacing: -0.3px;
       }
       .card-title-sub {
-        font-size: 11px;
-        color: #94a3b8;
-        margin-top: 1px;
+        font-size: 12px;
+        color: var(--vds-text-secondary);
+        margin-top: 2px;
+        font-weight: 400;
       }
       .status-badge {
         display: flex;
         align-items: center;
         gap: 6px;
         padding: 5px 12px;
-        border-radius: 20px;
+        border-radius: 100px;
         font-size: 12px;
         font-weight: 500;
-        background: var(--doorlock-glass);
-        border: 1px solid var(--doorlock-border);
-        color: #94a3b8;
+        background: var(--vds-glass);
+        border: 1px solid var(--vds-border);
+        color: var(--vds-text-secondary);
       }
       .status-badge.active {
-        background: rgba(248, 113, 113, 0.15);
-        border-color: rgba(248, 113, 113, 0.3);
-        color: #f87171;
+        background: rgba(255, 69, 58, 0.14);
+        border-color: rgba(255, 69, 58, 0.25);
+        color: var(--vds-red);
       }
       .status-badge.answered {
-        background: rgba(52, 211, 153, 0.15);
-        border-color: rgba(52, 211, 153, 0.3);
-        color: #34d399;
+        background: rgba(48, 209, 88, 0.14);
+        border-color: rgba(48, 209, 88, 0.25);
+        color: var(--vds-green);
       }
       .status-dot {
-        width: 7px;
-        height: 7px;
+        width: 6px;
+        height: 6px;
         border-radius: 50%;
-        background: #6b7280;
+        background: var(--vds-text-tertiary);
       }
       .status-badge.active .status-dot {
-        background: #f87171;
-        animation: blink 1.2s ease-in-out infinite;
+        background: var(--vds-red);
+        animation: pulse 1.6s ease-in-out infinite;
       }
       .status-badge.answered .status-dot {
-        background: #34d399;
+        background: var(--vds-green);
       }
-      @keyframes blink {
-        0%, 100% { opacity: 1; transform: scale(1); }
-        50% { opacity: 0.5; transform: scale(0.85); }
+      @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.4; }
       }
 
       /* Main buttons */
@@ -130,7 +167,7 @@ class DoorlockCard extends LitElement {
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 12px;
-        padding: 16px 20px;
+        padding: 16px 20px 20px;
       }
       .main-btn {
         display: flex;
@@ -138,31 +175,41 @@ class DoorlockCard extends LitElement {
         align-items: center;
         justify-content: center;
         gap: 8px;
-        padding: 20px 12px;
-        background: var(--doorlock-glass);
-        border: 1px solid var(--doorlock-border);
-        border-radius: 16px;
+        padding: 24px 12px;
+        background: var(--vds-glass);
+        border: 1px solid var(--vds-border);
+        border-radius: 18px;
         cursor: pointer;
-        transition: all 0.2s ease;
+        transition: all 0.2s cubic-bezier(0.32, 0.72, 0, 1);
         font-family: inherit;
-        color: #f1f5f9;
+        color: var(--vds-text-primary);
       }
       .main-btn:hover {
-        background: rgba(255, 255, 255, 0.1);
-        border-color: rgba(255, 255, 255, 0.15);
-        transform: translateY(-2px);
+        background: var(--vds-glass-hover);
+        border-color: var(--vds-border-hover);
       }
       .main-btn:active {
-        transform: translateY(0);
+        transform: scale(0.97);
+        background: rgba(120, 120, 128, 0.10);
       }
       .main-btn-icon {
-        font-size: 28px;
-        line-height: 1;
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--vds-blue);
+        width: 44px;
+        height: 44px;
+        border-radius: 14px;
+        background: rgba(10, 132, 255, 0.12);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        letter-spacing: 0.5px;
       }
       .main-btn-label {
-        font-size: 13px;
-        font-weight: 600;
-        color: #e2e8f0;
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--vds-text-primary);
+        letter-spacing: -0.2px;
       }
 
       /* Page content */
@@ -170,102 +217,127 @@ class DoorlockCard extends LitElement {
         padding: 0 0 16px;
       }
 
-      /* Entity missing warning */
+      /* Entity missing */
       .entity-missing {
-        padding: 24px 20px;
+        padding: 28px 20px;
         text-align: center;
-        color: #94a3b8;
-      }
-      .entity-missing-icon {
-        font-size: 36px;
-        margin-bottom: 12px;
+        color: var(--vds-text-secondary);
       }
       .entity-missing-title {
         font-size: 15px;
         font-weight: 600;
-        color: #fbbf24;
+        color: var(--vds-orange);
         margin-bottom: 6px;
       }
       .entity-missing-desc {
-        font-size: 12px;
-        color: #94a3b8;
+        font-size: 13px;
+        color: var(--vds-text-secondary);
         margin-bottom: 16px;
       }
       .entity-missing-desc code {
-        background: rgba(255,255,255,0.06);
+        background: var(--vds-glass);
         padding: 2px 6px;
         border-radius: 4px;
         font-size: 11px;
-        color: #e2e8f0;
+        color: var(--vds-text-primary);
       }
       .entity-missing-steps {
         text-align: left;
-        background: rgba(255,255,255,0.04);
-        border: 1px solid var(--doorlock-border);
-        border-radius: 12px;
+        background: var(--vds-glass);
+        border: 1px solid var(--vds-border);
+        border-radius: 14px;
         padding: 14px 16px;
         font-size: 12px;
         line-height: 1.8;
-        color: #94a3b8;
-      }
-      .entity-missing-steps b {
-        color: #e2e8f0;
-        font-weight: 500;
+        color: var(--vds-text-secondary);
       }
 
       /* Dial pad */
       .dial-display {
-        padding: 16px 20px 8px;
+        padding: 20px 20px 12px;
         text-align: center;
-        font-size: 28px;
-        font-weight: 600;
-        color: #f1f5f9;
-        min-height: 44px;
-        letter-spacing: 4px;
+        font-size: 32px;
+        font-weight: 300;
+        color: var(--vds-text-primary);
+        min-height: 48px;
+        letter-spacing: 6px;
         font-variant-numeric: tabular-nums;
       }
-      .dial-pad {
+      .intercom-dial-pad {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
-        gap: 8px;
-        padding: 0 16px 12px;
+        gap: 10px;
+        padding: 0 16px 14px;
       }
-      .dial-key {
-        aspect-ratio: 1.3;
-        background: var(--doorlock-glass);
-        border: 1px solid var(--doorlock-border);
-        border-radius: 12px;
-        color: #f1f5f9;
-        font-size: 20px;
-        font-weight: 500;
+      .intercom-dial-key {
+        aspect-ratio: 1.5;
+        background: transparent;
+        border: 1px solid var(--vds-border);
+        border-radius: 14px;
+        color: var(--vds-text-primary);
+        font-size: 22px;
+        font-weight: 400;
         cursor: pointer;
         transition: all 0.15s;
         display: flex;
         align-items: center;
         justify-content: center;
         font-family: inherit;
+        padding: 0;
       }
-      .dial-key:hover {
-        background: rgba(255, 255, 255, 0.1);
+      .intercom-dial-key:hover {
+        background: var(--vds-glass-hover);
+        border-color: var(--vds-border-hover);
       }
-      .dial-key:active {
-        background: rgba(255, 255, 255, 0.05);
-        transform: scale(0.95);
+      .intercom-dial-key:active {
+        background: var(--vds-glass);
+        transform: scale(0.96);
+      }
+      .intercom-dial-key.backspace {
+        font-size: 15px;
+        color: var(--vds-text-secondary);
+        font-weight: 500;
+      }
+      .intercom-dial-key.property-center {
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--vds-text-secondary);
       }
       .dial-actions {
-        display: flex;
-        gap: 10px;
-        padding: 0 16px 12px;
+        padding: 0 16px 14px;
       }
       .dial-call-btn {
-        flex: 1;
-        padding: 14px;
-        background: linear-gradient(135deg, #34d399 0%, #059669 100%);
+        width: 100%;
+        padding: 16px;
+        background: var(--vds-green);
         border: none;
         border-radius: 14px;
-        color: #fff;
-        font-size: 14px;
+        color: #000;
+        font-size: 15px;
         font-weight: 600;
+        cursor: pointer;
+        font-family: inherit;
+        transition: all 0.15s;
+        letter-spacing: 0.5px;
+      }
+      .dial-call-btn:hover {
+        background: #4CDF7A;
+      }
+      .dial-call-btn:active {
+        transform: scale(0.97);
+        background: #28B94F;
+      }
+
+      /* History toggle */
+      .history-toggle {
+        margin: 0 16px 12px;
+        padding: 12px;
+        background: var(--vds-glass);
+        border: 1px solid var(--vds-border);
+        border-radius: 14px;
+        color: var(--vds-text-secondary);
+        font-size: 13px;
+        font-weight: 500;
         cursor: pointer;
         display: flex;
         align-items: center;
@@ -274,48 +346,9 @@ class DoorlockCard extends LitElement {
         font-family: inherit;
         transition: all 0.15s;
       }
-      .dial-call-btn:active {
-        transform: scale(0.97);
-      }
-      .dial-backspace {
-        padding: 14px 18px;
-        background: var(--doorlock-glass);
-        border: 1px solid var(--doorlock-border);
-        border-radius: 14px;
-        color: #94a3b8;
-        cursor: pointer;
-        font-size: 16px;
-        font-family: inherit;
-        transition: all 0.15s;
-      }
-      .dial-backspace:hover {
-        background: rgba(255, 255, 255, 0.1);
-        color: #f1f5f9;
-      }
-      .dial-backspace:active {
-        transform: scale(0.95);
-      }
-
-      /* Property center button */
-      .property-center-btn {
-        margin: 0 16px 12px;
-        padding: 12px;
-        background: linear-gradient(135deg, #fbbf24 0%, #d97706 100%);
-        border: none;
-        border-radius: 14px;
-        color: #fff;
-        font-size: 13px;
-        font-weight: 600;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-        font-family: inherit;
-        transition: all 0.15s;
-      }
-      .property-center-btn:active {
-        transform: scale(0.97);
+      .history-toggle:hover {
+        background: var(--vds-glass-hover);
+        color: var(--vds-text-primary);
       }
 
       /* Recent calls */
@@ -324,39 +357,37 @@ class DoorlockCard extends LitElement {
         padding: 0 16px;
       }
       .recent-calls-title {
-        font-size: 12px;
-        color: #94a3b8;
-        margin-bottom: 8px;
-        font-weight: 500;
+        font-size: 11px;
+        text-transform: uppercase;
+        color: var(--vds-text-tertiary);
+        margin-bottom: 10px;
+        font-weight: 600;
+        letter-spacing: 0.5px;
       }
       .call-item {
         display: flex;
         align-items: center;
         gap: 12px;
-        padding: 12px;
-        background: var(--doorlock-glass);
-        border: 1px solid var(--doorlock-border);
-        border-radius: 12px;
+        padding: 12px 14px;
+        background: var(--vds-glass);
+        border: 1px solid var(--vds-border);
+        border-radius: 14px;
         margin-bottom: 8px;
         cursor: pointer;
         transition: all 0.15s;
       }
       .call-item:hover {
-        background: rgba(255, 255, 255, 0.1);
+        background: var(--vds-glass-hover);
       }
-      .call-item-icon {
-        width: 36px;
-        height: 36px;
+      .call-item-indicator {
+        width: 8px;
+        height: 8px;
         border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 16px;
         flex-shrink: 0;
       }
-      .call-item-icon.incoming { background: rgba(96, 165, 250, 0.2); }
-      .call-item-icon.outgoing { background: rgba(52, 211, 153, 0.2); }
-      .call-item-icon.missed { background: rgba(248, 113, 113, 0.2); }
+      .call-item-indicator.incoming { background: var(--vds-blue); }
+      .call-item-indicator.outgoing { background: var(--vds-green); }
+      .call-item-indicator.missed { background: var(--vds-red); }
       .call-item-info {
         flex: 1;
         min-width: 0;
@@ -364,34 +395,31 @@ class DoorlockCard extends LitElement {
       .call-item-name {
         font-size: 14px;
         font-weight: 500;
-        color: #e2e8f0;
+        color: var(--vds-text-primary);
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
       }
       .call-item-time {
         font-size: 11px;
-        color: #64748b;
+        color: var(--vds-text-tertiary);
         margin-top: 2px;
       }
       .call-item-redial {
-        width: 32px;
-        height: 32px;
-        border-radius: 50%;
-        background: var(--doorlock-glass);
-        border: 1px solid var(--doorlock-border);
-        color: #34d399;
+        padding: 6px 14px;
+        border-radius: 100px;
+        background: var(--vds-glass);
+        border: 1px solid var(--vds-border);
+        color: var(--vds-green);
         cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 14px;
-        flex-shrink: 0;
+        font-size: 12px;
+        font-weight: 600;
         font-family: inherit;
         transition: all 0.15s;
       }
       .call-item-redial:hover {
-        background: rgba(52, 211, 153, 0.2);
+        background: rgba(48, 209, 88, 0.15);
+        border-color: rgba(48, 209, 88, 0.3);
       }
 
       /* Door grid */
@@ -411,150 +439,83 @@ class DoorlockCard extends LitElement {
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        padding: 14px 8px;
-        background: var(--doorlock-glass);
-        border: 1px solid var(--doorlock-border);
-        border-radius: 14px;
+        padding: 16px 8px;
+        background: var(--vds-glass);
+        border: 1px solid var(--vds-border);
+        border-radius: 16px;
         cursor: pointer;
-        transition: all 0.2s ease;
+        transition: all 0.2s cubic-bezier(0.32, 0.72, 0, 1);
         gap: 6px;
-        min-height: 82px;
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
+        min-height: 90px;
       }
       .door-btn:hover {
-        background: rgba(255, 255, 255, 0.1);
-        border-color: rgba(255, 255, 255, 0.15);
-        transform: translateY(-1px);
+        background: var(--vds-glass-hover);
+        border-color: var(--vds-border-hover);
       }
       .door-btn:active {
-        transform: translateY(0);
-        background: rgba(255, 255, 255, 0.05);
+        transform: scale(0.96);
+        background: rgba(120, 120, 128, 0.10);
       }
       .door-btn.current-call {
-        background: rgba(248, 113, 113, 0.12);
-        border-color: rgba(248, 113, 113, 0.35);
+        background: rgba(255, 69, 58, 0.12);
+        border-color: rgba(255, 69, 58, 0.3);
       }
-      .door-btn-icon {
-        font-size: 22px;
-        margin-bottom: 2px;
+      .door-btn-num {
+        font-size: 20px;
+        font-weight: 600;
+        color: var(--vds-text-primary);
       }
       .door-btn-name {
-        font-size: 12px;
-        font-weight: 600;
-        color: #e2e8f0;
+        font-size: 11px;
+        font-weight: 500;
+        color: var(--vds-text-secondary);
       }
       .door-btn-floor {
         font-size: 10px;
-        color: #64748b;
+        color: var(--vds-text-tertiary);
         text-align: center;
         line-height: 1.2;
       }
       .door-btn.offline {
-        opacity: 0.4;
+        opacity: 0.35;
         cursor: not-allowed;
       }
       .door-btn.offline:hover {
         transform: none;
-        background: var(--doorlock-glass);
+        background: var(--vds-glass);
       }
       .door-btn-floor-strip {
         width: 100%;
-        height: 3px;
-        border-radius: 2px;
+        height: 2px;
+        border-radius: 1px;
         margin-bottom: 4px;
       }
-      .floor-1 { background: #60a5fa; }
-      .floor-2 { background: #818cf8; }
-      .floor-b1 { background: #fbbf24; }
-      .floor-b2 { background: #f97316; }
+      .floor-1 { background: var(--vds-blue); }
+      .floor-2 { background: #BF5AF2; }
+      .floor-b1 { background: var(--vds-orange); }
+      .floor-b2 { background: var(--vds-red); }
 
       /* Empty state */
       .empty-state {
         text-align: center;
         padding: 40px 20px;
-        color: #64748b;
+        color: var(--vds-text-tertiary);
         font-size: 13px;
       }
-      .empty-state-icon {
-        font-size: 32px;
-        margin-bottom: 8px;
-        opacity: 0.5;
-      }
-
-      /* Intercom popup header override */
-      .popup-header.intercom {
-        background: rgba(96, 165, 250, 0.1);
-        border-bottom-color: rgba(96, 165, 250, 0.2);
-      }
-
-      /* Intercom dial pad: 3x4 layout */
-      .intercom-dial-pad {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 8px;
-        padding: 0 16px 12px;
-      }
-      .intercom-dial-key {
-        aspect-ratio: 1.6;
-        background: var(--doorlock-glass);
-        border: 1px solid var(--doorlock-border);
-        border-radius: 12px;
-        color: #f1f5f9;
-        font-size: 20px;
+      .empty-state-title {
+        font-size: 15px;
         font-weight: 500;
-        cursor: pointer;
-        transition: all 0.15s;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-family: inherit;
-        padding: 0;
-      }
-      .intercom-dial-key:hover {
-        background: rgba(255, 255, 255, 0.1);
-      }
-      .intercom-dial-key:active {
-        background: rgba(255, 255, 255, 0.05);
-        transform: scale(0.95);
-      }
-      .intercom-dial-key.property-center {
-        font-size: 22px;
-      }
-      .intercom-dial-key.backspace {
-        font-size: 18px;
-        color: #94a3b8;
-      }
-
-      /* Call history toggle */
-      .history-toggle {
-        margin: 0 16px 12px;
-        padding: 10px;
-        background: var(--doorlock-glass);
-        border: 1px solid var(--doorlock-border);
-        border-radius: 12px;
-        color: #94a3b8;
-        font-size: 12px;
-        font-weight: 500;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 6px;
-        font-family: inherit;
-        transition: all 0.15s;
-      }
-      .history-toggle:hover {
-        background: rgba(255, 255, 255, 0.1);
-        color: #e2e8f0;
+        color: var(--vds-text-secondary);
+        margin-bottom: 6px;
       }
 
       /* Popup overlay */
       .popup-overlay {
         position: fixed;
         inset: 0;
-        background: rgba(0, 0, 0, 0.7);
-        backdrop-filter: blur(4px);
+        background: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
         z-index: 9000;
         display: flex;
         align-items: center;
@@ -564,97 +525,99 @@ class DoorlockCard extends LitElement {
       .popup {
         width: 100%;
         max-width: 400px;
-        background: var(--doorlock-card-bg);
-        border: 1px solid var(--doorlock-border);
+        background: rgba(28, 28, 30, 0.85);
+        border: 1px solid var(--vds-border);
         border-radius: 24px;
         overflow: hidden;
-        backdrop-filter: blur(24px);
-        -webkit-backdrop-filter: blur(24px);
-        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
-        animation: popupIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        backdrop-filter: blur(50px) saturate(180%);
+        -webkit-backdrop-filter: blur(50px) saturate(180%);
+        box-shadow: 0 24px 80px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255,255,255,0.08);
+        animation: popupIn 0.35s cubic-bezier(0.32, 0.72, 0, 1);
       }
       @keyframes popupIn {
-        from { opacity: 0; transform: scale(0.88); }
-        to { opacity: 1; transform: scale(1); }
+        from { opacity: 0; transform: scale(0.92) translateY(10px); }
+        to { opacity: 1; transform: scale(1) translateY(0); }
       }
       .popup-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
         padding: 16px 20px;
-        background: rgba(248, 113, 113, 0.1);
-        border-bottom: 1px solid rgba(248, 113, 113, 0.2);
+        background: rgba(255, 69, 58, 0.08);
+        border-bottom: 1px solid rgba(255, 69, 58, 0.15);
       }
       .popup-header.answered {
-        background: rgba(52, 211, 153, 0.1);
-        border-bottom-color: rgba(52, 211, 153, 0.2);
+        background: rgba(48, 209, 88, 0.08);
+        border-bottom-color: rgba(48, 209, 88, 0.15);
+      }
+      .popup-header.intercom {
+        background: rgba(10, 132, 255, 0.08);
+        border-bottom-color: rgba(10, 132, 255, 0.15);
       }
       .popup-header-info {
         display: flex;
         align-items: center;
-        gap: 10px;
+        gap: 12px;
       }
       .popup-calling-icon {
-        width: 38px;
-        height: 38px;
-        background: rgba(248, 113, 113, 0.2);
+        width: 36px;
+        height: 36px;
+        background: rgba(255, 69, 58, 0.15);
         border-radius: 10px;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 20px;
-        animation: ring 1.2s ease-in-out infinite;
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--vds-red);
+        animation: pulse 1.6s ease-in-out infinite;
       }
       .popup-calling-icon.answered {
-        background: rgba(52, 211, 153, 0.2);
+        background: rgba(48, 209, 88, 0.15);
+        color: var(--vds-green);
         animation: none;
       }
-      @keyframes ring {
-        0%, 100% { transform: rotate(0deg); }
-        20% { transform: rotate(-15deg); }
-        40% { transform: rotate(15deg); }
-        60% { transform: rotate(-10deg); }
-        80% { transform: rotate(10deg); }
-      }
       .popup-calling-label {
-        font-size: 10px;
-        color: #f87171;
+        font-size: 11px;
+        color: var(--vds-red);
         font-weight: 600;
         letter-spacing: 0.5px;
         text-transform: uppercase;
       }
       .popup-calling-label.answered {
-        color: #34d399;
+        color: var(--vds-green);
       }
       .popup-device-name {
         font-size: 15px;
         font-weight: 600;
-        color: #f1f5f9;
+        color: var(--vds-text-primary);
         margin-top: 2px;
+        letter-spacing: -0.2px;
       }
       .popup-device-location {
-        font-size: 11px;
-        color: #64748b;
+        font-size: 12px;
+        color: var(--vds-text-tertiary);
         margin-top: 1px;
       }
       .popup-close {
         width: 32px;
         height: 32px;
         border-radius: 50%;
-        background: var(--doorlock-glass);
-        border: 1px solid var(--doorlock-border);
-        color: #94a3b8;
-        font-size: 16px;
+        background: var(--vds-glass);
+        border: 1px solid var(--vds-border);
+        color: var(--vds-text-secondary);
+        font-size: 15px;
         display: flex;
         align-items: center;
         justify-content: center;
         cursor: pointer;
         transition: all 0.15s;
         font-family: inherit;
+        font-weight: 300;
       }
       .popup-close:hover {
-        background: rgba(255, 255, 255, 0.1);
-        color: #f1f5f9;
+        background: var(--vds-glass-hover);
+        color: var(--vds-text-primary);
       }
 
       /* Video frame */
@@ -678,16 +641,16 @@ class DoorlockCard extends LitElement {
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        gap: 8px;
-        color: rgba(255, 255, 255, 0.4);
-        font-size: 12px;
-        background: rgba(0, 0, 0, 0.3);
+        gap: 10px;
+        color: var(--vds-text-tertiary);
+        font-size: 13px;
+        background: rgba(0, 0, 0, 0.4);
       }
       .video-spinner {
-        width: 28px;
-        height: 28px;
-        border: 2px solid rgba(255, 255, 255, 0.15);
-        border-top-color: rgba(255, 255, 255, 0.5);
+        width: 24px;
+        height: 24px;
+        border: 2px solid rgba(255, 255, 255, 0.1);
+        border-top-color: var(--vds-text-secondary);
         border-radius: 50%;
         animation: spin 0.8s linear infinite;
       }
@@ -698,11 +661,11 @@ class DoorlockCard extends LitElement {
       /* Action buttons */
       .popup-actions {
         display: flex;
-        gap: 10px;
+        gap: 12px;
         padding: 14px 16px 16px;
       }
       .popup-actions.two-btn {
-        gap: 14px;
+        gap: 12px;
       }
       .action-btn {
         flex: 1;
@@ -710,7 +673,7 @@ class DoorlockCard extends LitElement {
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        gap: 5px;
+        gap: 4px;
         padding: 14px 8px;
         border-radius: 14px;
         border: none;
@@ -719,50 +682,54 @@ class DoorlockCard extends LitElement {
         font-weight: 600;
         transition: all 0.15s;
         font-family: inherit;
+        letter-spacing: -0.2px;
       }
       .action-btn:active {
-        transform: scale(0.97);
+        transform: scale(0.96);
       }
-      .action-btn-icon {
-        font-size: 22px;
-        line-height: 1;
+      .action-btn-label {
+        font-size: 10px;
+        font-weight: 500;
+        opacity: 0.7;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
       }
       .action-btn.unlock {
-        background: linear-gradient(135deg, #34d399 0%, #059669 100%);
-        color: #fff;
-        box-shadow: 0 4px 14px rgba(52, 211, 153, 0.35);
+        background: var(--vds-green);
+        color: #000;
       }
       .action-btn.unlock:hover {
-        box-shadow: 0 6px 20px rgba(52, 211, 153, 0.45);
+        background: #4CDF7A;
       }
       .action-btn.answer {
-        background: linear-gradient(135deg, #60a5fa 0%, #2563eb 100%);
+        background: var(--vds-blue);
         color: #fff;
-        box-shadow: 0 4px 14px rgba(96, 165, 250, 0.35);
       }
       .action-btn.answer:hover {
-        box-shadow: 0 6px 20px rgba(96, 165, 250, 0.45);
+        background: #3395FF;
       }
       .action-btn.hangup {
-        background: linear-gradient(135deg, #f87171 0%, #dc2626 100%);
+        background: var(--vds-red);
         color: #fff;
-        box-shadow: 0 4px 14px rgba(248, 113, 113, 0.35);
       }
       .action-btn.hangup:hover {
-        box-shadow: 0 6px 20px rgba(248, 113, 113, 0.45);
+        background: #FF5E54;
       }
       .action-btn.stop {
-        background: linear-gradient(135deg, #f87171 0%, #dc2626 100%);
+        background: var(--vds-red);
         color: #fff;
-        box-shadow: 0 4px 14px rgba(248, 113, 113, 0.35);
+      }
+      .action-btn.stop:hover {
+        background: #FF5E54;
       }
 
       /* Monitor popup */
       .monitor-popup {
         position: fixed;
         inset: 0;
-        background: rgba(0, 0, 0, 0.85);
-        backdrop-filter: blur(6px);
+        background: rgba(0, 0, 0, 0.75);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
         z-index: 9000;
         display: flex;
         flex-direction: column;
@@ -773,51 +740,54 @@ class DoorlockCard extends LitElement {
       .monitor-popup-content {
         width: 100%;
         max-width: 520px;
-        background: var(--doorlock-card-bg);
-        border: 1px solid var(--doorlock-border);
+        background: rgba(28, 28, 30, 0.85);
+        border: 1px solid var(--vds-border);
         border-radius: 24px;
         overflow: hidden;
-        backdrop-filter: blur(24px);
-        -webkit-backdrop-filter: blur(24px);
-        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
-        animation: popupIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        backdrop-filter: blur(50px) saturate(180%);
+        -webkit-backdrop-filter: blur(50px) saturate(180%);
+        box-shadow: 0 24px 80px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255,255,255,0.08);
+        animation: popupIn 0.35s cubic-bezier(0.32, 0.72, 0, 1);
       }
       .monitor-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
         padding: 14px 18px;
-        background: rgba(96, 165, 250, 0.1);
-        border-bottom: 1px solid rgba(96, 165, 250, 0.2);
+        background: rgba(10, 132, 255, 0.08);
+        border-bottom: 1px solid rgba(10, 132, 255, 0.15);
       }
       .monitor-header-info {
         display: flex;
         align-items: center;
-        gap: 10px;
+        gap: 12px;
       }
       .monitor-icon {
-        width: 36px;
-        height: 36px;
-        background: rgba(96, 165, 250, 0.2);
+        width: 34px;
+        height: 34px;
+        background: rgba(10, 132, 255, 0.12);
         border-radius: 10px;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 18px;
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--vds-blue);
       }
       .monitor-title {
-        font-size: 14px;
+        font-size: 15px;
         font-weight: 600;
-        color: #f1f5f9;
+        color: var(--vds-text-primary);
+        letter-spacing: -0.2px;
       }
       .monitor-subtitle {
-        font-size: 11px;
-        color: #64748b;
+        font-size: 12px;
+        color: var(--vds-text-tertiary);
         margin-top: 1px;
       }
       .monitor-actions {
         display: flex;
-        gap: 10px;
+        gap: 12px;
         padding: 14px 16px 16px;
       }
     `;
@@ -1131,11 +1101,6 @@ class DoorlockCard extends LitElement {
     return 'online';
   }
 
-  _getDoorEmoji(displayName) {
-    const emoji = { '1号机': '🚗', '2号机': '🌷', '3号机': '🚗', '4号机': '🚗', '5号机': '🚪', '6号机': '🚪', '7号机': '🚪', '8号机': '🏠' };
-    return emoji[displayName] || '🚪';
-  }
-
   _callService(service, data = {}) {
     if (!this._hass) return;
     this._hass.callService('uppercoast_doorlock', service, data);
@@ -1195,6 +1160,7 @@ class DoorlockCard extends LitElement {
       this._callService('monitor_stop', { target_ip: this._monitorTargetIp });
     }
     this._showMonitorVideo = false;
+    this._showMonitorSelector = true;
     this._monitorTargetIp = '';
   }
 
@@ -1257,7 +1223,6 @@ class DoorlockCard extends LitElement {
         <div class="card">
           ${this._renderHeader(buildingName)}
           <div class="entity-missing">
-            <div class="entity-missing-icon">⚠️</div>
             <div class="entity-missing-title">Integration 未就绪</div>
             <div class="entity-missing-desc">
               未找到实体 <code>binary_sensor.vds_call_status</code>
@@ -1296,7 +1261,10 @@ class DoorlockCard extends LitElement {
     return html`
       <div class="card-header">
         <div class="card-title">
-          <div class="card-title-icon">🏠</div>
+          <div class="card-title-icon">
+            ${ICON_URL ? html`<img src="${ICON_URL}" alt="" @error=${(e) => { e.target.style.display='none'; }}>` : ''}
+            <span>门禁</span>
+          </div>
           <div>
             <div class="card-title-text">云海湾门禁</div>
             <div class="card-title-sub">${buildingName}</div>
@@ -1314,12 +1282,10 @@ class DoorlockCard extends LitElement {
     return html`
       <div class="main-buttons">
         <button class="main-btn" @click=${() => { this._showIntercomPopup = true; }}>
-          <span class="main-btn-icon">📞</span>
-          <span class="main-btn-label">对讲</span>
+          <span class="main-btn-label" style="font-size:16px;font-weight:600;">对讲</span>
         </button>
         <button class="main-btn" @click=${this._openMonitorSelector}>
-          <span class="main-btn-icon">📹</span>
-          <span class="main-btn-label">监控</span>
+          <span class="main-btn-label" style="font-size:16px;font-weight:600;">监控</span>
         </button>
       </div>
     `;
@@ -1329,10 +1295,10 @@ class DoorlockCard extends LitElement {
 
   _renderIntercomPopup() {
     const recentCalls = (this._callHistory || []).slice(0, 5);
-    const iconMap = {
-      incoming: { icon: '📥', cls: 'incoming' },
-      outgoing: { icon: '📤', cls: 'outgoing' },
-      missed: { icon: '❌', cls: 'missed' },
+    const typeMap = {
+      incoming: '呼入',
+      outgoing: '呼出',
+      missed: '未接',
     };
 
     return html`
@@ -1340,13 +1306,13 @@ class DoorlockCard extends LitElement {
         <div class="popup">
           <div class="popup-header intercom">
             <div class="popup-header-info">
-              <div class="popup-calling-icon" style="animation:none;background:rgba(96,165,250,0.2);">📞</div>
+              <div class="popup-calling-icon" style="animation:none;background:rgba(96,165,250,0.2);color:var(--vds-blue);">对讲</div>
               <div>
                 <div class="popup-device-name">对讲</div>
                 <div class="popup-device-location">${this._buildingName || '云海湾门禁'}</div>
               </div>
             </div>
-            <button class="popup-close" @click=${() => this._showIntercomPopup = false}>✕</button>
+            <button class="popup-close" @click=${() => this._showIntercomPopup = false}>×</button>
           </div>
 
           <div class="page-content">
@@ -1355,14 +1321,12 @@ class DoorlockCard extends LitElement {
               ${['1','2','3','4','5','6','7','8','9'].map(key => html`
                 <button class="intercom-dial-key" @click=${() => this._dial(key)}>${key}</button>
               `)}
-              <button class="intercom-dial-key property-center" @click=${this._callPropertyCenter} title="物业中心机">👮</button>
+              <button class="intercom-dial-key property-center" @click=${this._callPropertyCenter} title="物业中心机">物业</button>
               <button class="intercom-dial-key" @click=${() => this._dial('0')}>0</button>
-              <button class="intercom-dial-key backspace" @click=${this._dialBackspace}>⌫</button>
+              <button class="intercom-dial-key backspace" @click=${this._dialBackspace}>删除</button>
             </div>
             <div class="dial-actions">
-              <button class="dial-call-btn" @click=${this._makeCall}>
-                <span style="font-size:18px;">📞</span>呼叫
-              </button>
+              <button class="dial-call-btn" @click=${this._makeCall}>呼叫</button>
             </div>
 
             <button class="history-toggle" @click=${() => this._showCallHistory = !this._showCallHistory}>
@@ -1374,23 +1338,23 @@ class DoorlockCard extends LitElement {
               <div class="recent-calls">
                 <div class="recent-calls-title">最近通话</div>
                 ${recentCalls.map((call) => {
-                  const info = iconMap[call.type] || iconMap.incoming;
+                  const cls = call.type || 'incoming';
                   const canRedial = call.number && call.number !== '物业中心';
                   return html`
                     <div class="call-item" @click=${() => {
                       if (canRedial) this._dialInput = call.number;
                     }}>
-                      <div class="call-item-icon ${info.cls}">${info.icon}</div>
+                      <div class="call-item-indicator ${cls}"></div>
                       <div class="call-item-info">
                         <div class="call-item-name">${call.name}</div>
-                        <div class="call-item-time">${call.time}</div>
+                        <div class="call-item-time">${typeMap[call.type] || '呼入'} · ${call.time}</div>
                       </div>
                       ${canRedial ? html`
                         <button class="call-item-redial" @click=${(e) => {
                           e.stopPropagation();
                           this._dialInput = call.number;
                           this._makeCall();
-                        }}>↻</button>
+                        }}>重拨</button>
                       ` : ''}
                     </div>
                   `;
@@ -1413,19 +1377,18 @@ class DoorlockCard extends LitElement {
         <div class="popup" style="max-width:520px;">
           <div class="monitor-header">
             <div class="monitor-header-info">
-              <div class="monitor-icon">📹</div>
+              <div class="monitor-icon">监控</div>
               <div>
                 <div class="monitor-title">选择监控号机</div>
                 <div class="monitor-subtitle">${this._buildingName || '云海湾门禁'}</div>
               </div>
             </div>
-            <button class="popup-close" @click=${() => this._showMonitorSelector = false}>✕</button>
+            <button class="popup-close" @click=${() => this._showMonitorSelector = false}>×</button>
           </div>
 
           ${!doors.length ? html`
             <div class="empty-state">
-              <div class="empty-state-icon">📹</div>
-              <div>暂无门口机数据</div>
+              <div class="empty-state-title">暂无门口机数据</div>
               <div style="font-size:11px;margin-top:8px;line-height:1.6;">
                 1. 确认 Addon 已启动<br/>
                 2. 检查 Integration 配置的 host/port 是否正确<br/>
@@ -1444,8 +1407,7 @@ class DoorlockCard extends LitElement {
                     @click=${() => { if (status !== 'offline') this._startMonitor(door.target_ip); }}
                   >
                     <div class="door-btn-floor-strip ${this._getFloorColor(door.floor_label)}"></div>
-                    <div class="door-btn-icon">${this._getDoorEmoji(displayName)}</div>
-                    <div class="door-btn-name">${displayName}</div>
+                    <div class="door-btn-num">${displayName}</div>
                     <div class="door-btn-floor">${door.floor_label || ''}</div>
                   </div>
                 `;
@@ -1465,11 +1427,11 @@ class DoorlockCard extends LitElement {
     const answerBtn = this._callAnswered
       ? html`
         <button class="action-btn hangup" @click=${this._hangupCall}>
-          <span class="action-btn-icon">📵</span>挂断
+          挂断
         </button>`
       : html`
         <button class="action-btn answer" @click=${this._answerCall}>
-          <span class="action-btn-icon">📞</span>接听
+          接听
         </button>`;
 
     const headerClass = this._callAnswered ? 'answered' : '';
@@ -1482,14 +1444,14 @@ class DoorlockCard extends LitElement {
         <div class="popup">
           <div class="popup-header ${headerClass}">
             <div class="popup-header-info">
-              <div class="popup-calling-icon ${iconClass}">📞</div>
+              <div class="popup-calling-icon ${iconClass}">${this._callAnswered ? '通话' : '呼入'}</div>
               <div>
                 <div class="popup-calling-label ${labelClass}">${labelText}</div>
                 <div class="popup-device-name">${this._displayName}</div>
                 <div class="popup-device-location">${this._floorLabel || ''}</div>
               </div>
             </div>
-            <button class="popup-close" @click=${this._dismissCallPopup}>✕</button>
+            <button class="popup-close" @click=${this._dismissCallPopup}>×</button>
           </div>
 
           <div class="video-frame">
@@ -1505,7 +1467,7 @@ class DoorlockCard extends LitElement {
 
           <div class="popup-actions two-btn">
             <button class="action-btn unlock" @click=${this._unlockDoor}>
-              <span class="action-btn-icon">🔓</span>解锁
+              解锁
             </button>
             ${answerBtn}
           </div>
@@ -1525,13 +1487,13 @@ class DoorlockCard extends LitElement {
         <div class="monitor-popup-content">
           <div class="monitor-header">
             <div class="monitor-header-info">
-              <div class="monitor-icon">📹</div>
+              <div class="monitor-icon">监控</div>
               <div>
                 <div class="monitor-title">${displayName}</div>
                 <div class="monitor-subtitle">${door.floor_label || ''} · ${door.position_detail || ''}</div>
               </div>
             </div>
-            <button class="popup-close" @click=${this._stopMonitor}>✕</button>
+            <button class="popup-close" @click=${this._stopMonitor}>×</button>
           </div>
 
           <div class="video-frame">
@@ -1547,7 +1509,7 @@ class DoorlockCard extends LitElement {
 
           <div class="monitor-actions">
             <button class="action-btn stop" @click=${this._stopMonitor}>
-              <span class="action-btn-icon">📵</span>停止监控
+              停止监控
             </button>
           </div>
         </div>

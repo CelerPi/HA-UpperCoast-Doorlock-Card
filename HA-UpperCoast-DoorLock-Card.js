@@ -822,7 +822,10 @@ class DoorlockCard extends LitElement {
     if (!this._hass) return;
     const entityId = 'binary_sensor.uppercoast_doorlock_call_active';
     const state = this._hass.states[entityId];
-    if (!state) return;
+    if (!state) {
+      console.warn('[DoorlockCard] 未找到实体:', entityId);
+      return;
+    }
 
     const a = state.attributes || {};
     const wasActive = this._callActive;
@@ -865,6 +868,14 @@ class DoorlockCard extends LitElement {
 
     this._buildingName = a.building_name || '云海湾门禁';
     this._devices = a.devices || [];
+
+    // 调试日志：在浏览器开发者工具 Console 中查看
+    console.debug('[DoorlockCard] 状态更新:', {
+      connection: a.connection_status,
+      apiUrl: a.api_url,
+      deviceCount: a.device_count,
+      devices: this._devices,
+    });
   }
 
   /* =============== Camera / Video =============== */
@@ -1347,7 +1358,11 @@ class DoorlockCard extends LitElement {
             <div class="empty-state">
               <div class="empty-state-icon">📹</div>
               <div>暂无门口机数据</div>
-              <div style="font-size:11px;margin-top:4px;">请检查 Addon 配置</div>
+              <div style="font-size:11px;margin-top:8px;line-height:1.6;">
+                1. 确认 Addon 已启动<br/>
+                2. 检查 Integration 配置的 host/port 是否正确<br/>
+                3. 在浏览器 F12 → Console 查看调试信息
+              </div>
             </div>
           ` : html`
             <div class="door-grid">

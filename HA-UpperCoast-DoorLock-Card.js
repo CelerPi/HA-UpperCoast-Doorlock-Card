@@ -1,4 +1,4 @@
-import { LitElement, html, css } from 'lit';
+import { LitElement, html, css } from 'https://esm.sh/lit@3.1.4';
 
 class DoorlockCard extends LitElement {
   static get properties() {

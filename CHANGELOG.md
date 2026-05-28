@@ -1,5 +1,11 @@
 # 更新日志
 
+## v0.1.6
+
+- 同步 Integration 实体 ID 变更，引用：
+  - `binary_sensor.vds_call_status`
+  - `camera.vds_video`
+
 ## v0.1.5
 
 - 同步 Integration 实体 ID 变更，引用 `binary_sensor.vds_call_status`

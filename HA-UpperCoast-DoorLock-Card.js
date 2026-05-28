@@ -940,7 +940,7 @@ class DoorlockCard extends LitElement {
   }
 
   _updateCameraImage() {
-    const cameraState = this._hass?.states['camera.uppercoast_doorlock_camera'];
+    const cameraState = this._hass?.states['camera.vds_video'];
     if (!cameraState) {
       this._cameraUrl = '';
       return;
@@ -1125,7 +1125,7 @@ class DoorlockCard extends LitElement {
 
   _getDoorStatus(targetIp) {
     if (!targetIp || !this._hass) return 'offline';
-    const cameraState = this._hass.states['camera.uppercoast_doorlock_camera'];
+    const cameraState = this._hass.states['camera.vds_video'];
     if (!cameraState) return 'offline';
     if (this._targetIp === targetIp && this._callActive) return 'current-call';
     return 'online';

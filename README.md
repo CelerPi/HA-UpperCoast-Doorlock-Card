@@ -2,7 +2,7 @@
 
 ![version](https://img.shields.io/badge/release-v0.1.9-blue)
 ![hacs](https://img.shields.io/badge/hacs-default-orange)
-![ha-version](https://img.shields.io/badge/HA-2024.11.0%2B-41BDF5)
+![ha-version](https://img.shields.io/badge/HA-2026.5.0%2B-41BDF5)
 
 云海湾虚拟门禁系统的 Home Assistant Lovelace 自定义卡片，复刻虚拟室内机界面。
 
@@ -71,7 +71,7 @@ building_id: building_1_a
 
 使用本卡片前，请确保以下组件已正确安装并配置：
 
-- **Home Assistant** 2024.11.0 或更高版本
+- **Home Assistant** 2026.5.0 或更高版本
 - **[uppercoast_doorlock](https://github.com/CelerPi/HA-UpperCoast-Doorlock)** 集成（Integration）
 - **[uppercoast_doorlock](https://github.com/CelerPi/HA-UpperCoast-Doorlock)** Add-on
 

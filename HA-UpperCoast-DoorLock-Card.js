@@ -1054,7 +1054,7 @@ class DoorlockCard extends LitElement {
   /* =============== Dial Actions =============== */
 
   _dial(key) {
-    if (this._dialInput.length >= 12) return;
+    if (this._dialInput.length >= 4) return;
     this._dialInput += key;
   }
 
@@ -1181,9 +1181,9 @@ class DoorlockCard extends LitElement {
 
     return html`
       <div class="page-content">
-        <div class="dial-display">${this._dialInput || '&nbsp;'}</div>
+        <div class="dial-display">${this._dialInput || ' '}</div>
         <div class="dial-pad">
-          ${['1','2','3','4','5','6','7','8','9','*','0','#'].map(key => html`
+          ${['1','2','3','4','5','6','7','8','9','0'].map(key => html`
             <button class="dial-key" @click=${() => this._dial(key)}>${key}</button>
           `)}
         </div>

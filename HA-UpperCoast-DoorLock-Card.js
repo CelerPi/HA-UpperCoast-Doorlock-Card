@@ -14,7 +14,9 @@ class DoorlockCard extends LitElement {
       _positionDetail: { type: String, state: true },
       _showCallPopup: { type: Boolean, state: true },
       _showIntercomPopup: { type: Boolean, state: true },
-      _showMonitorPopup: { type: Boolean, state: true },
+      _showCallHistory: { type: Boolean, state: true },
+      _showMonitorSelector: { type: Boolean, state: true },
+      _showMonitorVideo: { type: Boolean, state: true },
       _monitorTargetIp: { type: String, state: true },
       _devices: { type: Array, state: true },
       _buildingName: { type: String, state: true },
@@ -436,6 +438,73 @@ class DoorlockCard extends LitElement {
         opacity: 0.5;
       }
 
+      /* Intercom popup header override */
+      .popup-header.intercom {
+        background: rgba(96, 165, 250, 0.1);
+        border-bottom-color: rgba(96, 165, 250, 0.2);
+      }
+
+      /* Intercom dial pad: 3x4 layout */
+      .intercom-dial-pad {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+        padding: 0 16px 12px;
+      }
+      .intercom-dial-key {
+        aspect-ratio: 1.6;
+        background: var(--doorlock-glass);
+        border: 1px solid var(--doorlock-border);
+        border-radius: 12px;
+        color: #f1f5f9;
+        font-size: 20px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.15s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: inherit;
+        padding: 0;
+      }
+      .intercom-dial-key:hover {
+        background: rgba(255, 255, 255, 0.1);
+      }
+      .intercom-dial-key:active {
+        background: rgba(255, 255, 255, 0.05);
+        transform: scale(0.95);
+      }
+      .intercom-dial-key.property-center {
+        font-size: 22px;
+      }
+      .intercom-dial-key.backspace {
+        font-size: 18px;
+        color: #94a3b8;
+      }
+
+      /* Call history toggle */
+      .history-toggle {
+        margin: 0 16px 12px;
+        padding: 10px;
+        background: var(--doorlock-glass);
+        border: 1px solid var(--doorlock-border);
+        border-radius: 12px;
+        color: #94a3b8;
+        font-size: 12px;
+        font-weight: 500;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        font-family: inherit;
+        transition: all 0.15s;
+      }
+      .history-toggle:hover {
+        background: rgba(255, 255, 255, 0.1);
+        color: #e2e8f0;
+      }
+
       /* Popup overlay */
       .popup-overlay {
         position: fixed;
@@ -721,8 +790,8 @@ class DoorlockCard extends LitElement {
   }
 
   updated(changedProperties) {
-    if (changedProperties.has('_showCallPopup') || changedProperties.has('_showMonitorPopup')) {
-      if (this._showCallPopup || this._showMonitorPopup) {
+    if (changedProperties.has('_showCallPopup') || changedProperties.has('_showMonitorVideo')) {
+      if (this._showCallPopup || this._showMonitorVideo) {
         this._updateCameraImage();
         this._startCameraRefresh();
       } else {
@@ -735,9 +804,12 @@ class DoorlockCard extends LitElement {
     this._config = config || {};
     this._dialInput = '';
     this._callHistory = [];
+    this._showCallHistory = false;
     this._callAnswered = false;
     this._callPopupDismissed = false;
     this._showIntercomPopup = false;
+    this._showMonitorSelector = false;
+    this._showMonitorVideo = false;
   }
 
   set hass(hass) {
@@ -768,9 +840,10 @@ class DoorlockCard extends LitElement {
         this._callAnswered = false;
         this._callPopupDismissed = false;
         this._showCallPopup = true;
-        this._showMonitorPopup = false;
+        this._showMonitorSelector = false;
+        this._showMonitorVideo = false;
         this._showIntercomPopup = false;
-      } else if (!this._callPopupDismissed && !this._showMonitorPopup && !this._showIntercomPopup) {
+      } else if (!this._callPopupDismissed && !this._showMonitorSelector && !this._showMonitorVideo && !this._showIntercomPopup) {
         // 呼叫仍在进行，且用户没有手动关闭
         this._showCallPopup = true;
       }
@@ -1043,11 +1116,17 @@ class DoorlockCard extends LitElement {
 
   /* =============== Monitor Actions =============== */
 
-  _monitorDoor(targetIp) {
-    this._monitorTargetIp = targetIp;
-    this._showMonitorPopup = true;
+  _openMonitorSelector() {
+    this._showMonitorSelector = true;
+    this._showMonitorVideo = false;
     this._showCallPopup = false;
     this._showIntercomPopup = false;
+  }
+
+  _startMonitor(targetIp) {
+    this._monitorTargetIp = targetIp;
+    this._showMonitorSelector = false;
+    this._showMonitorVideo = true;
     this._callService('monitor_start', { target_ip: targetIp });
     this._startAudio(targetIp);
   }
@@ -1057,7 +1136,7 @@ class DoorlockCard extends LitElement {
     if (this._monitorTargetIp) {
       this._callService('monitor_stop', { target_ip: this._monitorTargetIp });
     }
-    this._showMonitorPopup = false;
+    this._showMonitorVideo = false;
     this._monitorTargetIp = '';
   }
 
@@ -1121,7 +1200,8 @@ class DoorlockCard extends LitElement {
         ${this._renderMainButtons()}
       </div>
       ${this._showIntercomPopup ? this._renderIntercomPopup() : ''}
-      ${this._showMonitorPopup ? this._renderMonitorPopup() : ''}
+      ${this._showMonitorSelector ? this._renderMonitorSelector() : ''}
+      ${this._showMonitorVideo ? this._renderMonitorVideoPopup() : ''}
       ${this._showCallPopup ? this._renderCallPopup() : ''}
     `;
   }
@@ -1158,7 +1238,7 @@ class DoorlockCard extends LitElement {
           <span class="main-btn-icon">📞</span>
           <span class="main-btn-label">对讲</span>
         </button>
-        <button class="main-btn" @click=${() => { this._showMonitorPopup = true; }}>
+        <button class="main-btn" @click=${this._openMonitorSelector}>
           <span class="main-btn-icon">📹</span>
           <span class="main-btn-label">监控</span>
         </button>
@@ -1179,7 +1259,7 @@ class DoorlockCard extends LitElement {
     return html`
       <div class="popup-overlay" @click=${(e) => { if (e.target === e.currentTarget) this._showIntercomPopup = false; }}>
         <div class="popup">
-          <div class="popup-header">
+          <div class="popup-header intercom">
             <div class="popup-header-info">
               <div class="popup-calling-icon" style="animation:none;background:rgba(96,165,250,0.2);">📞</div>
               <div>
@@ -1192,22 +1272,26 @@ class DoorlockCard extends LitElement {
 
           <div class="page-content">
             <div class="dial-display">${this._dialInput || ' '}</div>
-            <div class="dial-pad">
-              ${['1','2','3','4','5','6','7','8','9','0'].map(key => html`
-                <button class="dial-key" @click=${() => this._dial(key)}>${key}</button>
+            <div class="intercom-dial-pad">
+              ${['1','2','3','4','5','6','7','8','9'].map(key => html`
+                <button class="intercom-dial-key" @click=${() => this._dial(key)}>${key}</button>
               `)}
+              <button class="intercom-dial-key property-center" @click=${this._callPropertyCenter} title="物业中心机">👮</button>
+              <button class="intercom-dial-key" @click=${() => this._dial('0')}>0</button>
+              <button class="intercom-dial-key backspace" @click=${this._dialBackspace}>⌫</button>
             </div>
             <div class="dial-actions">
               <button class="dial-call-btn" @click=${this._makeCall}>
                 <span style="font-size:18px;">📞</span>呼叫
               </button>
-              <button class="dial-backspace" @click=${this._dialBackspace}>⌫</button>
             </div>
-            <button class="property-center-btn" @click=${this._callPropertyCenter}>
-              <span style="font-size:16px;">🏢</span> 物业中心机
+
+            <button class="history-toggle" @click=${() => this._showCallHistory = !this._showCallHistory}>
+              <span>${this._showCallHistory ? '▾' : '▸'}</span>
+              ${this._showCallHistory ? '隐藏通话记录' : '显示通话记录'}
             </button>
 
-            ${recentCalls.length > 0 ? html`
+            ${this._showCallHistory && recentCalls.length > 0 ? html`
               <div class="recent-calls">
                 <div class="recent-calls-title">最近通话</div>
                 ${recentCalls.map((call) => {
@@ -1240,38 +1324,52 @@ class DoorlockCard extends LitElement {
     `;
   }
 
-  /* =============== Monitor Page =============== */  /* =============== Monitor Page =============== */
+  /* =============== Monitor Selector =============== */
 
-  _renderMonitorPage() {
+  _renderMonitorSelector() {
     const doors = this._getDoors();
-    if (!doors.length) {
-      return html`
-        <div class="empty-state">
-          <div class="empty-state-icon">📹</div>
-          <div>暂无门口机数据</div>
-          <div style="font-size:11px;margin-top:4px;">请检查 Addon 配置</div>
-        </div>
-      `;
-    }
 
     return html`
-      <div class="door-grid">
-        ${doors.map((door) => {
-          const status = this._getDoorStatus(door.target_ip);
-          const isCurrentCall = status === 'current-call';
-          const displayName = door.display_name || door.name || '';
-          return html`
-            <div
-              class="door-btn ${status === 'offline' ? 'offline' : ''} ${isCurrentCall ? 'current-call' : ''}"
-              @click=${() => { if (status !== 'offline') this._monitorDoor(door.target_ip); }}
-            >
-              <div class="door-btn-floor-strip ${this._getFloorColor(door.floor_label)}"></div>
-              <div class="door-btn-icon">${this._getDoorEmoji(displayName)}</div>
-              <div class="door-btn-name">${displayName}</div>
-              <div class="door-btn-floor">${door.floor_label || ''}</div>
+      <div class="popup-overlay" @click=${(e) => { if (e.target === e.currentTarget) this._showMonitorSelector = false; }}>
+        <div class="popup" style="max-width:520px;">
+          <div class="monitor-header">
+            <div class="monitor-header-info">
+              <div class="monitor-icon">📹</div>
+              <div>
+                <div class="monitor-title">选择监控号机</div>
+                <div class="monitor-subtitle">${this._buildingName || '云海湾门禁'}</div>
+              </div>
             </div>
-          `;
-        })}
+            <button class="popup-close" @click=${() => this._showMonitorSelector = false}>✕</button>
+          </div>
+
+          ${!doors.length ? html`
+            <div class="empty-state">
+              <div class="empty-state-icon">📹</div>
+              <div>暂无门口机数据</div>
+              <div style="font-size:11px;margin-top:4px;">请检查 Addon 配置</div>
+            </div>
+          ` : html`
+            <div class="door-grid">
+              ${doors.map((door) => {
+                const status = this._getDoorStatus(door.target_ip);
+                const isCurrentCall = status === 'current-call';
+                const displayName = door.display_name || door.name || '';
+                return html`
+                  <div
+                    class="door-btn ${status === 'offline' ? 'offline' : ''} ${isCurrentCall ? 'current-call' : ''}"
+                    @click=${() => { if (status !== 'offline') this._startMonitor(door.target_ip); }}
+                  >
+                    <div class="door-btn-floor-strip ${this._getFloorColor(door.floor_label)}"></div>
+                    <div class="door-btn-icon">${this._getDoorEmoji(displayName)}</div>
+                    <div class="door-btn-name">${displayName}</div>
+                    <div class="door-btn-floor">${door.floor_label || ''}</div>
+                  </div>
+                `;
+              })}
+            </div>
+          `}
+        </div>
       </div>
     `;
   }
@@ -1333,9 +1431,9 @@ class DoorlockCard extends LitElement {
     `;
   }
 
-  /* =============== Monitor Popup =============== */
+  /* =============== Monitor Video Popup =============== */
 
-  _renderMonitorPopup() {
+  _renderMonitorVideoPopup() {
     const door = this._getDoors().find(d => d.target_ip === this._monitorTargetIp) || {};
     const displayName = door.display_name || door.name || '监控中';
 

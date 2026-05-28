@@ -1,5 +1,9 @@
 # 更新日志
 
+## v0.1.5
+
+- 同步 Integration 实体 ID 变更，引用 `binary_sensor.vds_call_status`
+
 ## v0.1.4
 
 - 增加浏览器 Console 调试日志，方便排查设备数据是否下发

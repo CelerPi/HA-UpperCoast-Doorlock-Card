@@ -23,6 +23,7 @@ class DoorlockCard extends LitElement {
       _dialInput: { type: String, state: true },
       _callHistory: { type: Array, state: true },
       _cameraUrl: { type: String, state: true },
+      _entityMissing: { type: Boolean, state: true },
     };
   }
 
@@ -167,6 +168,49 @@ class DoorlockCard extends LitElement {
       /* Page content */
       .page-content {
         padding: 0 0 16px;
+      }
+
+      /* Entity missing warning */
+      .entity-missing {
+        padding: 24px 20px;
+        text-align: center;
+        color: #94a3b8;
+      }
+      .entity-missing-icon {
+        font-size: 36px;
+        margin-bottom: 12px;
+      }
+      .entity-missing-title {
+        font-size: 15px;
+        font-weight: 600;
+        color: #fbbf24;
+        margin-bottom: 6px;
+      }
+      .entity-missing-desc {
+        font-size: 12px;
+        color: #94a3b8;
+        margin-bottom: 16px;
+      }
+      .entity-missing-desc code {
+        background: rgba(255,255,255,0.06);
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-size: 11px;
+        color: #e2e8f0;
+      }
+      .entity-missing-steps {
+        text-align: left;
+        background: rgba(255,255,255,0.04);
+        border: 1px solid var(--doorlock-border);
+        border-radius: 12px;
+        padding: 14px 16px;
+        font-size: 12px;
+        line-height: 1.8;
+        color: #94a3b8;
+      }
+      .entity-missing-steps b {
+        color: #e2e8f0;
+        font-weight: 500;
       }
 
       /* Dial pad */
@@ -810,6 +854,7 @@ class DoorlockCard extends LitElement {
     this._showIntercomPopup = false;
     this._showMonitorSelector = false;
     this._showMonitorVideo = false;
+    this._entityMissing = false;
   }
 
   set hass(hass) {
@@ -820,12 +865,14 @@ class DoorlockCard extends LitElement {
 
   _loadState() {
     if (!this._hass) return;
-    const entityId = 'binary_sensor.uppercoast_doorlock_call_active';
+    const entityId = 'binary_sensor.vds_call_status';
     const state = this._hass.states[entityId];
     if (!state) {
       console.warn('[DoorlockCard] 未找到实体:', entityId);
+      this._entityMissing = true;
       return;
     }
+    this._entityMissing = false;
 
     const a = state.attributes || {};
     const wasActive = this._callActive;
@@ -1204,6 +1251,27 @@ class DoorlockCard extends LitElement {
 
   render() {
     const buildingName = this._buildingName || '云海湾门禁';
+
+    if (this._entityMissing) {
+      return html`
+        <div class="card">
+          ${this._renderHeader(buildingName)}
+          <div class="entity-missing">
+            <div class="entity-missing-icon">⚠️</div>
+            <div class="entity-missing-title">Integration 未就绪</div>
+            <div class="entity-missing-desc">
+              未找到实体 <code>binary_sensor.vds_call_status</code>
+            </div>
+            <div class="entity-missing-steps">
+              <div>1. 确认 Addon 已启动且日志显示「已加载门口机」</div>
+              <div>2. 在 <b>设置 → 设备与服务</b> 中添加「虚拟门禁系统」Integration</div>
+              <div>3. Host 必须填 <b>HA 主机的实际 IP</b>（不能填 localhost）</div>
+              <div>4. 配置完成后重载 Integration 或重启 HA</div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
 
     return html`
       <div class="card">

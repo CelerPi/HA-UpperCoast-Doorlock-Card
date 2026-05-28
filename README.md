@@ -8,53 +8,97 @@
 
 ## 功能
 
-- 显示门口机列表（4列网格布局）
-- 楼层色彩条区分楼层
-- 门口机状态指示（在线/离线/当前呼叫中）
-- 呼入弹窗（自动弹出）：显示视频画面 + 解锁/接听/挂断按钮
-- 主动监控弹窗：点击门口机进入实时监控
+- 显示门口机列表（4 列网格布局，移动端自动适配为 2 列）
+- 楼层色彩条区分楼层（1层蓝色、2层紫色、-1层黄色、-2层橙色）
+- 门口机状态指示（待机 / 呼叫中 / 当前通话）
+- 呼入弹窗自动弹出：显示门口机信息 + 视频画面 + 解锁 / 接听 / 挂断
+- 主动监控：点击任意门口机进入实时监控画面
+- 楼栋切换支持：覆盖 1 栋 A~E 座、2 栋 A~C 座
 
 ## 安装
 
-1. HACS → 仪表盘 → 右下角 → **自定义仓库**
-2. 填入仓库地址：`https://github.com/CelerPi/HA-UpperCoast-Doorlock-Card`
-3. 类别选择：**仪表盘**
-4. 搜索并下载 `云海湾门禁卡片`
+### 方式一：HACS（推荐）
+
+1. 打开 Home Assistant，进入 **HACS -> 前端**
+2. 点击右下角 **⋮ -> 自定义仓库**
+3. 填入仓库地址：`https://github.com/CelerPi/HA-UpperCoast-Doorlock-Card`
+4. 类别选择：**仪表盘**
+5. 在 HACS 前端列表中找到 **云海湾门禁卡片**，点击 **下载**
+6. 刷新浏览器（Ctrl + F5 / Cmd + Shift + R）
+
+> 如果已经通过 HACS 安装过旧版本，请点击卡片详情页的 **重新下载** 以获取最新文件。
+
+### 方式二：手动安装
+
+1. 下载本仓库中的 `HA-UpperCoast-DoorLock-Card.js`
+2. 将其复制到 Home Assistant 的 `config/www/` 目录下
+3. 进入 **设置 -> 仪表盘 -> 右上角 ⋮ -> 资源**
+4. 点击 **添加资源**
+   - URL：`/local/HA-UpperCoast-DoorLock-Card.js`
+   - 资源类型：**JavaScript Module**
+5. 保存并刷新浏览器
 
 ## 使用
 
-在 Lovelace 仪表盘中添加卡片，选择 `云海湾门禁卡片`。
-
-### 配置选项
+在 Lovelace 仪表盘中进入编辑模式，添加卡片时搜索 **云海湾门禁卡片**，或在 YAML 模式下手动配置：
 
 ```yaml
 type: custom:doorlock-card
-building_id: building_1_a  # 可选，默认 building_1_a
+building_id: building_1_a
 ```
 
-### 楼栋 ID
+### 配置选项
+
+| 参数 | 类型 | 必填 | 默认值 | 说明 |
+|------|------|------|--------|------|
+| `type` | string | 是 | - | 固定填写 `custom:doorlock-card` |
+| `building_id` | string | 否 | `building_1_a` | 楼栋 ID，详见下表 |
+
+### 楼栋 ID 对照表
 
 | ID | 楼栋 |
 |----|------|
-| building_1_a | 1栋A座 |
-| building_1_b | 1栋B座 |
-| building_1_c | 1栋C座 |
-| building_1_d | 1栋D座 |
-| building_1_e | 1栋E座 |
-| building_2_a | 2栋A座 |
-| building_2_b | 2栋B座 |
-| building_2_c | 2栋C座 |
+| `building_1_a` | 1 栋 A 座 |
+| `building_1_b` | 1 栋 B 座 |
+| `building_1_c` | 1 栋 C 座 |
+| `building_1_d` | 1 栋 D 座 |
+| `building_1_e` | 1 栋 E 座 |
+| `building_2_a` | 2 栋 A 座 |
+| `building_2_b` | 2 栋 B 座 |
+| `building_2_c` | 2 栋 C 座 |
 
 ## 依赖
 
-- Home Assistant 2024.11.0+
-- 已安装 `uppercoast_doorlock` 集成
-- 已安装 `uppercoast_doorlock` Addon
+使用本卡片前，请确保以下组件已正确安装并配置：
+
+- **Home Assistant** 2024.11.0 或更高版本
+- **[uppercoast_doorlock](https://github.com/CelerPi/HA-UpperCoast-Doorlock)** 集成（Integration）
+- **[uppercoast_doorlock](https://github.com/CelerPi/HA-UpperCoast-Doorlock)** Add-on
+
+## 故障排查
+
+### 提示 "Custom element doesn't exist: doorlock-card"
+
+1. 确认已通过 HACS 下载或手动放置了 JS 文件
+2. 检查 **设置 -> 仪表盘 -> 资源** 中是否存在对应的 JavaScript Module 资源
+3. 强制刷新浏览器缓存（Ctrl + F5 / Cmd + Shift + R）
+4. 查看浏览器开发者工具 Console，确认 JS 文件是否 404 或存在加载报错
+
+### HACS 安装后找不到卡片
+
+1. 在 HACS 中点击卡片详情页的 **重新下载**
+2. 检查 Home Assistant 日志是否有前端资源加载失败的提示
+3. 确认 HACS 版本为最新版
 
 ## 相关仓库
 
 | 仓库 | 说明 |
 |------|------|
 | [HA-UpperCoast-Doorlock](https://github.com/CelerPi/HA-UpperCoast-Doorlock) | 主仓库，安装指南 |
-| [HA-UpperCoast-Doorlock-Integration](https://github.com/CelerPi/HA-UpperCoast-Doorlock-Integration) | 集成源码 |
-| [HA-UpperCoast-DoorLock-System](https://github.com/CelerPi/HA-UpperCoast-DoorLock-System) | Addon 源码 |
+| [HA-UpperCoast-Doorlock-Integration](https://github.com/CelerPi/HA-UpperCoast-Doorlock-Integration) | 集成（Integration）源码 |
+| [HA-UpperCoast-DoorLock-Addon](https://github.com/CelerPi/HA-UpperCoast-DoorLock-addon) | Addon 源码 |
+| [HA-UpperCoast-DoorLock-Card](https://github.com/CelerPi/HA-UpperCoast-DoorLock-Card) | 本仓库，Dashboard 卡片源码 |
+
+## License
+
+[MIT](LICENSE)

@@ -5,7 +5,6 @@ class DoorlockCard extends LitElement {
     return {
       _hass: { type: Object, state: true },
       _config: { type: Object, state: true },
-      _activeTab: { type: String, state: true },
       _callActive: { type: Boolean, state: true },
       _callAnswered: { type: Boolean, state: true },
       _callPopupDismissed: { type: Boolean, state: true },
@@ -14,6 +13,7 @@ class DoorlockCard extends LitElement {
       _floorLabel: { type: String, state: true },
       _positionDetail: { type: String, state: true },
       _showCallPopup: { type: Boolean, state: true },
+      _showIntercomPopup: { type: Boolean, state: true },
       _showMonitorPopup: { type: Boolean, state: true },
       _monitorTargetIp: { type: String, state: true },
       _devices: { type: Array, state: true },
@@ -122,36 +122,44 @@ class DoorlockCard extends LitElement {
         50% { opacity: 0.5; transform: scale(0.85); }
       }
 
-      /* Tab bar */
-      .tab-bar {
+      /* Main buttons */
+      .main-buttons {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        padding: 16px 20px;
+      }
+      .main-btn {
         display: flex;
-        border-bottom: 1px solid var(--doorlock-border);
-      }
-      .tab-btn {
-        flex: 1;
-        padding: 12px;
-        background: none;
-        border: none;
-        color: #94a3b8;
-        font-size: 13px;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 20px 12px;
+        background: var(--doorlock-glass);
+        border: 1px solid var(--doorlock-border);
+        border-radius: 16px;
         cursor: pointer;
-        transition: all 0.2s;
-        position: relative;
+        transition: all 0.2s ease;
         font-family: inherit;
-      }
-      .tab-btn.active {
         color: #f1f5f9;
-        font-weight: 600;
       }
-      .tab-btn.active::after {
-        content: '';
-        position: absolute;
-        bottom: 0;
-        left: 20%;
-        right: 20%;
-        height: 2px;
-        background: #60a5fa;
-        border-radius: 1px;
+      .main-btn:hover {
+        background: rgba(255, 255, 255, 0.1);
+        border-color: rgba(255, 255, 255, 0.15);
+        transform: translateY(-2px);
+      }
+      .main-btn:active {
+        transform: translateY(0);
+      }
+      .main-btn-icon {
+        font-size: 28px;
+        line-height: 1;
+      }
+      .main-btn-label {
+        font-size: 13px;
+        font-weight: 600;
+        color: #e2e8f0;
       }
 
       /* Page content */
@@ -725,11 +733,11 @@ class DoorlockCard extends LitElement {
 
   setConfig(config) {
     this._config = config || {};
-    this._activeTab = 'intercom';
     this._dialInput = '';
     this._callHistory = [];
     this._callAnswered = false;
     this._callPopupDismissed = false;
+    this._showIntercomPopup = false;
   }
 
   set hass(hass) {
@@ -761,7 +769,8 @@ class DoorlockCard extends LitElement {
         this._callPopupDismissed = false;
         this._showCallPopup = true;
         this._showMonitorPopup = false;
-      } else if (!this._callPopupDismissed && !this._showMonitorPopup) {
+        this._showIntercomPopup = false;
+      } else if (!this._callPopupDismissed && !this._showMonitorPopup && !this._showIntercomPopup) {
         // 呼叫仍在进行，且用户没有手动关闭
         this._showCallPopup = true;
       }
@@ -1038,6 +1047,7 @@ class DoorlockCard extends LitElement {
     this._monitorTargetIp = targetIp;
     this._showMonitorPopup = true;
     this._showCallPopup = false;
+    this._showIntercomPopup = false;
     this._callService('monitor_start', { target_ip: targetIp });
     this._startAudio(targetIp);
   }
@@ -1108,11 +1118,11 @@ class DoorlockCard extends LitElement {
     return html`
       <div class="card">
         ${this._renderHeader(buildingName)}
-        ${this._renderTabs()}
-        ${this._renderTabContent()}
+        ${this._renderMainButtons()}
       </div>
-      ${this._showCallPopup ? this._renderCallPopup() : ''}
+      ${this._showIntercomPopup ? this._renderIntercomPopup() : ''}
       ${this._showMonitorPopup ? this._renderMonitorPopup() : ''}
+      ${this._showCallPopup ? this._renderCallPopup() : ''}
     `;
   }
 
@@ -1141,37 +1151,24 @@ class DoorlockCard extends LitElement {
     `;
   }
 
-  _renderTabs() {
-    const tabs = [
-      { id: 'intercom', label: '对讲' },
-      { id: 'monitor', label: '监控' },
-    ];
-
+  _renderMainButtons() {
     return html`
-      <div class="tab-bar">
-        ${tabs.map(tab => html`
-          <button
-            class="tab-btn ${this._activeTab === tab.id ? 'active' : ''}"
-            @click=${() => { this._activeTab = tab.id; }}
-          >
-            ${tab.label}
-          </button>
-        `)}
+      <div class="main-buttons">
+        <button class="main-btn" @click=${() => { this._showIntercomPopup = true; }}>
+          <span class="main-btn-icon">📞</span>
+          <span class="main-btn-label">对讲</span>
+        </button>
+        <button class="main-btn" @click=${() => { this._showMonitorPopup = true; }}>
+          <span class="main-btn-icon">📹</span>
+          <span class="main-btn-label">监控</span>
+        </button>
       </div>
     `;
   }
 
-  _renderTabContent() {
-    switch (this._activeTab) {
-      case 'intercom': return this._renderIntercomPage();
-      case 'monitor': return this._renderMonitorPage();
-      default: return this._renderIntercomPage();
-    }
-  }
+  /* =============== Intercom Popup =============== */
 
-  /* =============== Intercom Page =============== */
-
-  _renderIntercomPage() {
+  _renderIntercomPopup() {
     const recentCalls = (this._callHistory || []).slice(0, 5);
     const iconMap = {
       incoming: { icon: '📥', cls: 'incoming' },
@@ -1180,55 +1177,70 @@ class DoorlockCard extends LitElement {
     };
 
     return html`
-      <div class="page-content">
-        <div class="dial-display">${this._dialInput || ' '}</div>
-        <div class="dial-pad">
-          ${['1','2','3','4','5','6','7','8','9','0'].map(key => html`
-            <button class="dial-key" @click=${() => this._dial(key)}>${key}</button>
-          `)}
-        </div>
-        <div class="dial-actions">
-          <button class="dial-call-btn" @click=${this._makeCall}>
-            <span style="font-size:18px;">📞</span>呼叫
-          </button>
-          <button class="dial-backspace" @click=${this._dialBackspace}>⌫</button>
-        </div>
-        <button class="property-center-btn" @click=${this._callPropertyCenter}>
-          <span style="font-size:16px;">🏢</span> 物业中心机
-        </button>
-
-        ${recentCalls.length > 0 ? html`
-          <div class="recent-calls">
-            <div class="recent-calls-title">最近通话</div>
-            ${recentCalls.map((call) => {
-              const info = iconMap[call.type] || iconMap.incoming;
-              const canRedial = call.number && call.number !== '物业中心';
-              return html`
-                <div class="call-item" @click=${() => {
-                  if (canRedial) this._dialInput = call.number;
-                }}>
-                  <div class="call-item-icon ${info.cls}">${info.icon}</div>
-                  <div class="call-item-info">
-                    <div class="call-item-name">${call.name}</div>
-                    <div class="call-item-time">${call.time}</div>
-                  </div>
-                  ${canRedial ? html`
-                    <button class="call-item-redial" @click=${(e) => {
-                      e.stopPropagation();
-                      this._dialInput = call.number;
-                      this._makeCall();
-                    }}>↻</button>
-                  ` : ''}
-                </div>
-              `;
-            })}
+      <div class="popup-overlay" @click=${(e) => { if (e.target === e.currentTarget) this._showIntercomPopup = false; }}>
+        <div class="popup">
+          <div class="popup-header">
+            <div class="popup-header-info">
+              <div class="popup-calling-icon" style="animation:none;background:rgba(96,165,250,0.2);">📞</div>
+              <div>
+                <div class="popup-device-name">对讲</div>
+                <div class="popup-device-location">${this._buildingName || '云海湾门禁'}</div>
+              </div>
+            </div>
+            <button class="popup-close" @click=${() => this._showIntercomPopup = false}>✕</button>
           </div>
-        ` : ''}
+
+          <div class="page-content">
+            <div class="dial-display">${this._dialInput || ' '}</div>
+            <div class="dial-pad">
+              ${['1','2','3','4','5','6','7','8','9','0'].map(key => html`
+                <button class="dial-key" @click=${() => this._dial(key)}>${key}</button>
+              `)}
+            </div>
+            <div class="dial-actions">
+              <button class="dial-call-btn" @click=${this._makeCall}>
+                <span style="font-size:18px;">📞</span>呼叫
+              </button>
+              <button class="dial-backspace" @click=${this._dialBackspace}>⌫</button>
+            </div>
+            <button class="property-center-btn" @click=${this._callPropertyCenter}>
+              <span style="font-size:16px;">🏢</span> 物业中心机
+            </button>
+
+            ${recentCalls.length > 0 ? html`
+              <div class="recent-calls">
+                <div class="recent-calls-title">最近通话</div>
+                ${recentCalls.map((call) => {
+                  const info = iconMap[call.type] || iconMap.incoming;
+                  const canRedial = call.number && call.number !== '物业中心';
+                  return html`
+                    <div class="call-item" @click=${() => {
+                      if (canRedial) this._dialInput = call.number;
+                    }}>
+                      <div class="call-item-icon ${info.cls}">${info.icon}</div>
+                      <div class="call-item-info">
+                        <div class="call-item-name">${call.name}</div>
+                        <div class="call-item-time">${call.time}</div>
+                      </div>
+                      ${canRedial ? html`
+                        <button class="call-item-redial" @click=${(e) => {
+                          e.stopPropagation();
+                          this._dialInput = call.number;
+                          this._makeCall();
+                        }}>↻</button>
+                      ` : ''}
+                    </div>
+                  `;
+                })}
+              </div>
+            ` : ''}
+          </div>
+        </div>
       </div>
     `;
   }
 
-  /* =============== Monitor Page =============== */
+  /* =============== Monitor Page =============== */  /* =============== Monitor Page =============== */
 
   _renderMonitorPage() {
     const doors = this._getDoors();

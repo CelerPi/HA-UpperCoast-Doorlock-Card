@@ -1,6 +1,6 @@
 # 云海湾门禁-Dashboard
 
-![version](https://img.shields.io/badge/release-v0.2.1-blue)
+![version](https://img.shields.io/badge/release-v0.2.2-blue)
 ![hacs](https://img.shields.io/badge/hacs-default-orange)
 ![ha-version](https://img.shields.io/badge/HA-2026.5.0%2B-41BDF5)
 

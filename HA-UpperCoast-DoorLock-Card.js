@@ -1,8 +1,16 @@
 import { LitElement, html, css } from 'https://esm.sh/lit@3.1.4';
 
+window.customCards = window.customCards || [];
+window.customCards.push({
+  type: 'doorlock-card',
+  name: '云海湾门禁',
+  description: '云海湾虚拟门禁系统 Dashboard 卡片',
+  preview: true,
+});
+
 let ICON_URL = '';
 try {
-  ICON_URL = new URL('icon.png', import.meta.url).href;
+  ICON_URL = new URL('assets/icon.png', import.meta.url).href;
 } catch (e) {
   ICON_URL = '';
 }
@@ -15,6 +23,7 @@ class DoorlockCard extends LitElement {
       _callActive: { type: Boolean, state: true },
       _callAnswered: { type: Boolean, state: true },
       _callPopupDismissed: { type: Boolean, state: true },
+      _callMinimized: { type: Boolean, state: true },
       _displayName: { type: String, state: true },
       _targetIp: { type: String, state: true },
       _floorLabel: { type: String, state: true },
@@ -31,6 +40,8 @@ class DoorlockCard extends LitElement {
       _callHistory: { type: Array, state: true },
       _cameraUrl: { type: String, state: true },
       _entityMissing: { type: Boolean, state: true },
+      _connectionStatus: { type: String, state: true },
+      _deviceCount: { type: Number, state: true },
     };
   }
 
@@ -40,31 +51,35 @@ class DoorlockCard extends LitElement {
         display: block;
         font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
         --vds-bg: #000000;
-        --vds-surface: rgba(28, 28, 30, 0.72);
-        --vds-glass: rgba(120, 120, 128, 0.16);
-        --vds-glass-hover: rgba(120, 120, 128, 0.24);
-        --vds-border: rgba(255, 255, 255, 0.08);
-        --vds-border-hover: rgba(255, 255, 255, 0.14);
-        --vds-text-primary: rgba(255, 255, 255, 0.92);
-        --vds-text-secondary: rgba(255, 255, 255, 0.55);
-        --vds-text-tertiary: rgba(255, 255, 255, 0.35);
-        --vds-blue: #0A84FF;
-        --vds-green: #30D158;
-        --vds-red: #FF453A;
-        --vds-orange: #FF9F0A;
-        --vds-yellow: #FFD60A;
+        --vds-surface: rgba(14, 18, 32, 0.86);
+        --vds-surface-strong: rgba(19, 25, 43, 0.94);
+        --vds-glass: rgba(255, 255, 255, 0.07);
+        --vds-glass-hover: rgba(255, 255, 255, 0.11);
+        --vds-border: rgba(255, 255, 255, 0.11);
+        --vds-border-hover: rgba(255, 255, 255, 0.2);
+        --vds-text-primary: rgba(255, 255, 255, 0.94);
+        --vds-text-secondary: rgba(226, 232, 240, 0.66);
+        --vds-text-tertiary: rgba(203, 213, 225, 0.42);
+        --vds-blue: #38BDF8;
+        --vds-green: #34D399;
+        --vds-red: #FB7185;
+        --vds-orange: #FBBF24;
+        --vds-yellow: #FDE68A;
       }
 
       /* Card */
       .card {
-        background: var(--vds-surface);
-        backdrop-filter: blur(40px) saturate(180%);
-        -webkit-backdrop-filter: blur(40px) saturate(180%);
+        position: relative;
+        background:
+          radial-gradient(circle at 14% 0%, rgba(52, 211, 153, 0.18), transparent 32%),
+          linear-gradient(150deg, rgba(16, 23, 42, 0.96), rgba(11, 16, 31, 0.88));
+        backdrop-filter: blur(28px) saturate(150%);
+        -webkit-backdrop-filter: blur(28px) saturate(150%);
         border: 1px solid var(--vds-border);
-        border-radius: 22px;
+        border-radius: 18px;
         overflow: hidden;
         color: var(--vds-text-primary);
-        box-shadow: 0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.06);
+        box-shadow: 0 18px 48px rgba(0, 0, 0, 0.32), inset 0 1px 0 rgba(255,255,255,0.08);
       }
 
       /* Header */
@@ -72,7 +87,8 @@ class DoorlockCard extends LitElement {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 18px 20px 14px;
+        gap: 14px;
+        padding: 16px 18px 12px;
         border-bottom: 1px solid var(--vds-border);
       }
       .card-title {
@@ -81,16 +97,16 @@ class DoorlockCard extends LitElement {
         gap: 12px;
       }
       .card-title-icon {
-        width: 38px;
-        height: 38px;
-        background: var(--vds-green);
-        border-radius: 12px;
+        width: 36px;
+        height: 36px;
+        background: linear-gradient(135deg, #34D399, #22C55E);
+        border-radius: 11px;
         position: relative;
         overflow: hidden;
-        font-size: 14px;
+        font-size: 13px;
         font-weight: 700;
-        color: #000;
-        letter-spacing: 0.5px;
+        color: rgba(6, 20, 14, 0.9);
+        box-shadow: 0 10px 24px rgba(34, 197, 94, 0.26);
       }
       .card-title-icon span {
         position: relative;
@@ -112,9 +128,8 @@ class DoorlockCard extends LitElement {
       }
       .card-title-text {
         font-size: 16px;
-        font-weight: 600;
+        font-weight: 700;
         color: var(--vds-text-primary);
-        letter-spacing: -0.3px;
       }
       .card-title-sub {
         font-size: 12px;
@@ -126,23 +141,30 @@ class DoorlockCard extends LitElement {
         display: flex;
         align-items: center;
         gap: 6px;
-        padding: 5px 12px;
-        border-radius: 100px;
+        padding: 6px 11px;
+        border-radius: 999px;
         font-size: 12px;
-        font-weight: 500;
-        background: var(--vds-glass);
+        font-weight: 650;
+        background: rgba(148, 163, 184, 0.12);
         border: 1px solid var(--vds-border);
         color: var(--vds-text-secondary);
+        white-space: nowrap;
       }
       .status-badge.active {
-        background: rgba(255, 69, 58, 0.14);
-        border-color: rgba(255, 69, 58, 0.25);
+        background: rgba(251, 113, 133, 0.14);
+        border-color: rgba(251, 113, 133, 0.28);
         color: var(--vds-red);
       }
+      .status-badge.online,
       .status-badge.answered {
-        background: rgba(48, 209, 88, 0.14);
-        border-color: rgba(48, 209, 88, 0.25);
+        background: rgba(52, 211, 153, 0.14);
+        border-color: rgba(52, 211, 153, 0.28);
         color: var(--vds-green);
+      }
+      .status-badge.offline {
+        background: rgba(251, 191, 36, 0.14);
+        border-color: rgba(251, 191, 36, 0.28);
+        color: var(--vds-orange);
       }
       .status-dot {
         width: 6px;
@@ -154,8 +176,12 @@ class DoorlockCard extends LitElement {
         background: var(--vds-red);
         animation: pulse 1.6s ease-in-out infinite;
       }
+      .status-badge.online .status-dot,
       .status-badge.answered .status-dot {
         background: var(--vds-green);
+      }
+      .status-badge.offline .status-dot {
+        background: var(--vds-orange);
       }
       @keyframes pulse {
         0%, 100% { opacity: 1; }
@@ -166,50 +192,106 @@ class DoorlockCard extends LitElement {
       .main-buttons {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: 12px;
-        padding: 16px 20px 20px;
+        gap: 10px;
+        padding: 14px 16px 16px;
       }
       .main-btn {
         display: flex;
-        flex-direction: column;
+        flex-direction: row;
         align-items: center;
-        justify-content: center;
-        gap: 8px;
-        padding: 24px 12px;
-        background: var(--vds-glass);
+        justify-content: flex-start;
+        gap: 10px;
+        min-width: 0;
+        padding: 13px 12px;
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.095), rgba(255, 255, 255, 0.045));
         border: 1px solid var(--vds-border);
-        border-radius: 18px;
+        border-radius: 14px;
         cursor: pointer;
         transition: all 0.2s cubic-bezier(0.32, 0.72, 0, 1);
         font-family: inherit;
         color: var(--vds-text-primary);
+        min-height: 62px;
       }
       .main-btn:hover {
         background: var(--vds-glass-hover);
         border-color: var(--vds-border-hover);
+        box-shadow: inset 0 1px 0 rgba(255,255,255,0.08);
       }
       .main-btn:active {
-        transform: scale(0.97);
+        transform: translateY(1px) scale(0.99);
         background: rgba(120, 120, 128, 0.10);
       }
       .main-btn-icon {
-        font-size: 13px;
-        font-weight: 700;
+        width: 34px;
+        height: 34px;
+        border-radius: 10px;
+        background: rgba(56, 189, 248, 0.14);
         color: var(--vds-blue);
-        width: 44px;
-        height: 44px;
-        border-radius: 14px;
-        background: rgba(10, 132, 255, 0.12);
         display: flex;
         align-items: center;
         justify-content: center;
-        letter-spacing: 0.5px;
+        flex: 0 0 auto;
+      }
+      .main-btn-icon ha-icon {
+        --mdc-icon-size: 19px;
+      }
+      .main-btn.monitor .main-btn-icon {
+        background: rgba(52, 211, 153, 0.14);
+        color: var(--vds-green);
+      }
+      .main-btn-copy {
+        min-width: 0;
+        text-align: left;
       }
       .main-btn-label {
-        font-size: 14px;
-        font-weight: 500;
+        display: block;
+        font-size: 15px;
+        font-weight: 700;
         color: var(--vds-text-primary);
-        letter-spacing: -0.2px;
+        line-height: 1.15;
+      }
+      .main-btn-sub {
+        display: block;
+        margin-top: 3px;
+        font-size: 11px;
+        color: var(--vds-text-tertiary);
+        line-height: 1.2;
+      }
+      .card-footer {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 0 18px 15px;
+        color: var(--vds-text-tertiary);
+        font-size: 11px;
+      }
+      .card-footer span {
+        display: inline-flex;
+        align-items: center;
+        min-width: 0;
+        white-space: nowrap;
+      }
+      .card-footer strong {
+        color: var(--vds-text-secondary);
+        font-weight: 650;
+        margin-left: 4px;
+      }
+      @media (max-width: 420px) {
+        .card-header {
+          padding: 14px 14px 10px;
+        }
+        .main-buttons {
+          padding: 12px 12px 14px;
+        }
+        .main-btn {
+          padding: 12px 10px;
+        }
+        .main-btn-sub {
+          display: none;
+        }
+        .card-footer {
+          padding: 0 14px 14px;
+        }
       }
 
       /* Page content */
@@ -525,13 +607,13 @@ class DoorlockCard extends LitElement {
       .popup {
         width: 100%;
         max-width: 400px;
-        background: rgba(28, 28, 30, 0.85);
+        background: var(--vds-surface-strong);
         border: 1px solid var(--vds-border);
-        border-radius: 24px;
+        border-radius: 18px;
         overflow: hidden;
-        backdrop-filter: blur(50px) saturate(180%);
-        -webkit-backdrop-filter: blur(50px) saturate(180%);
-        box-shadow: 0 24px 80px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255,255,255,0.08);
+        backdrop-filter: blur(34px) saturate(150%);
+        -webkit-backdrop-filter: blur(34px) saturate(150%);
+        box-shadow: 0 24px 80px rgba(0, 0, 0, 0.48), inset 0 1px 0 rgba(255,255,255,0.08);
         animation: popupIn 0.35s cubic-bezier(0.32, 0.72, 0, 1);
       }
       @keyframes popupIn {
@@ -723,6 +805,115 @@ class DoorlockCard extends LitElement {
         background: #FF5E54;
       }
 
+      /* Call PiP (small window) */
+      .call-pip {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        width: 260px;
+        background: rgba(28, 28, 30, 0.92);
+        border: 1px solid var(--vds-border);
+        border-radius: 18px;
+        overflow: hidden;
+        backdrop-filter: blur(40px) saturate(180%);
+        -webkit-backdrop-filter: blur(40px) saturate(180%);
+        box-shadow: 0 12px 40px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06);
+        z-index: 9000;
+        cursor: pointer;
+        animation: pipIn 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+        transition: transform 0.2s ease;
+      }
+      .call-pip:hover {
+        transform: scale(1.02);
+      }
+      .call-pip:active {
+        transform: scale(0.98);
+      }
+      @keyframes pipIn {
+        from { opacity: 0; transform: translateY(20px) scale(0.9); }
+        to { opacity: 1; transform: translateY(0) scale(1); }
+      }
+      .call-pip-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 12px;
+        background: rgba(255, 69, 58, 0.1);
+        border-bottom: 1px solid rgba(255, 69, 58, 0.15);
+      }
+      .call-pip-badge {
+        font-size: 10px;
+        font-weight: 700;
+        padding: 3px 8px;
+        border-radius: 6px;
+        background: rgba(255, 69, 58, 0.2);
+        color: var(--vds-red);
+        letter-spacing: 0.3px;
+      }
+      .call-pip-badge.answered {
+        background: rgba(48, 209, 88, 0.2);
+        color: var(--vds-green);
+      }
+      .call-pip-name {
+        flex: 1;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--vds-text-primary);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .call-pip-close {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        background: var(--vds-glass);
+        border: 1px solid var(--vds-border);
+        color: var(--vds-text-secondary);
+        font-size: 16px;
+        line-height: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.15s;
+      }
+      .call-pip-close:hover {
+        background: var(--vds-glass-hover);
+        color: var(--vds-text-primary);
+      }
+      .call-pip-video {
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        background: #000;
+        position: relative;
+        overflow: hidden;
+      }
+      .call-pip-video img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+      }
+      .call-pip-placeholder {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--vds-text-secondary);
+        font-size: 12px;
+      }
+      .call-pip-actions {
+        display: flex;
+        gap: 8px;
+        padding: 10px 12px 12px;
+      }
+      .call-pip-actions .action-btn {
+        padding: 10px 4px;
+        font-size: 12px;
+      }
+
       /* Monitor popup */
       .monitor-popup {
         position: fixed;
@@ -800,6 +991,7 @@ class DoorlockCard extends LitElement {
   disconnectedCallback() {
     this._stopCameraRefresh();
     this._stopAudio();
+    this._disconnectRealtime();
     super.disconnectedCallback();
   }
 
@@ -816,6 +1008,8 @@ class DoorlockCard extends LitElement {
 
   setConfig(config) {
     this._config = config || {};
+    this._entityId = this._config.entity || 'binary_sensor.vds_call_status';
+    this._cameraEntityId = this._config.camera_entity || 'camera.vds_video';
     this._dialInput = '';
     this._callHistory = [];
     this._showCallHistory = false;
@@ -825,17 +1019,19 @@ class DoorlockCard extends LitElement {
     this._showMonitorSelector = false;
     this._showMonitorVideo = false;
     this._entityMissing = false;
+    this._connectionStatus = 'unknown';
+    this._deviceCount = 0;
   }
 
   set hass(hass) {
-    const oldHass = this._hass;
     this._hass = hass;
     this._loadState();
+    this._connectRealtime();
   }
 
   _loadState() {
     if (!this._hass) return;
-    const entityId = 'binary_sensor.vds_call_status';
+    const entityId = this._entityId || 'binary_sensor.vds_call_status';
     const state = this._hass.states[entityId];
     if (!state) {
       console.warn('[DoorlockCard] 未找到实体:', entityId);
@@ -859,6 +1055,7 @@ class DoorlockCard extends LitElement {
         // 新的呼入开始
         this._callAnswered = false;
         this._callPopupDismissed = false;
+        this._callMinimized = true;
         this._showCallPopup = true;
         this._showMonitorSelector = false;
         this._showMonitorVideo = false;
@@ -885,6 +1082,8 @@ class DoorlockCard extends LitElement {
 
     this._buildingName = a.building_name || '云海湾门禁';
     this._devices = a.devices || [];
+    this._deviceCount = Number(a.device_count ?? this._devices.length ?? 0);
+    this._connectionStatus = a.connection_status || 'unknown';
 
     // 调试日志：在浏览器开发者工具 Console 中查看
     console.debug('[DoorlockCard] 状态更新:', {
@@ -897,7 +1096,70 @@ class DoorlockCard extends LitElement {
 
   /* =============== Camera / Video =============== */
 
+  _connectRealtime() {
+    if (!this._hass || this._wsConnecting || this._wsConnected || this._wsUnavailable) return;
+
+    this._wsConnecting = true;
+    const scheme = window.location.protocol === 'https:' ? 'wss' : 'ws';
+    const token = encodeURIComponent(this._getAuthToken());
+    const url = `${scheme}://${window.location.host}/api/uppercoast_doorlock/ws?token=${token}`;
+    const ws = new WebSocket(url);
+    this._realtimeWs = ws;
+
+    ws.onopen = () => {
+      this._wsConnecting = false;
+      this._wsConnected = true;
+      this._wsUnavailable = false;
+      this._stopCameraRefresh();
+      if (this._audioPollInterval) {
+        clearInterval(this._audioPollInterval);
+        this._audioPollInterval = null;
+      }
+    };
+
+    ws.onmessage = (event) => this._handleRealtimeMessage(event);
+    ws.onerror = () => {
+      this._wsUnavailable = true;
+    };
+    ws.onclose = () => {
+      this._wsConnecting = false;
+      this._wsConnected = false;
+      if (!this._wsUnavailable && this.isConnected) {
+        setTimeout(() => this._connectRealtime(), 3000);
+      }
+    };
+  }
+
+  _disconnectRealtime() {
+    this._wsConnecting = false;
+    this._wsConnected = false;
+    if (this._realtimeWs) {
+      this._realtimeWs.close();
+      this._realtimeWs = null;
+    }
+  }
+
+  _handleRealtimeMessage(event) {
+    let data;
+    try {
+      data = JSON.parse(event.data);
+    } catch (e) {
+      return;
+    }
+
+    if (data.type === 'frame' && data.jpeg) {
+      this._cameraUrl = `data:image/jpeg;base64,${data.jpeg}`;
+      return;
+    }
+
+    if (data.type === 'audio' && data.pcm) {
+      this._audioLastId = Math.max(this._audioLastId || 0, data.id || 0);
+      this._queueAudio(data.pcm);
+    }
+  }
+
   _startCameraRefresh() {
+    if (this._wsConnected) return;
     if (this._cameraInterval) return;
     this._cameraInterval = setInterval(() => this._updateCameraImage(), 500);
   }
@@ -910,7 +1172,8 @@ class DoorlockCard extends LitElement {
   }
 
   _updateCameraImage() {
-    const cameraState = this._hass?.states['camera.vds_video'];
+    const cameraEntityId = this._cameraEntityId || 'camera.vds_video';
+    const cameraState = this._hass?.states[cameraEntityId];
     if (!cameraState) {
       this._cameraUrl = '';
       return;
@@ -946,11 +1209,14 @@ class DoorlockCard extends LitElement {
 
   _startAudio(targetIp) {
     if (!targetIp) return;
+    this._stopAudio();
     this._initAudio();
     this._audioLastId = 0;
     this._audioQueue = [];
     this._startMicrophone(targetIp);
-    this._audioPollInterval = setInterval(() => this._pollAudio(targetIp), 50);
+    if (!this._wsConnected) {
+      this._audioPollInterval = setInterval(() => this._pollAudio(targetIp), 50);
+    }
   }
 
   _stopAudio() {
@@ -1054,6 +1320,15 @@ class DoorlockCard extends LitElement {
   }
 
   async _sendAudioChunk(targetIp, pcmBase64) {
+    if (this._wsConnected && this._realtimeWs?.readyState === WebSocket.OPEN) {
+      this._realtimeWs.send(JSON.stringify({
+        type: 'audio',
+        target_ip: targetIp,
+        pcm: pcmBase64,
+      }));
+      return;
+    }
+
     const token = this._getAuthToken();
     if (!token || !targetIp) return;
     try {
@@ -1095,7 +1370,8 @@ class DoorlockCard extends LitElement {
 
   _getDoorStatus(targetIp) {
     if (!targetIp || !this._hass) return 'offline';
-    const cameraState = this._hass.states['camera.vds_video'];
+    const cameraEntityId = this._cameraEntityId || 'camera.vds_video';
+    const cameraState = this._hass.states[cameraEntityId];
     if (!cameraState) return 'offline';
     if (this._targetIp === targetIp && this._callActive) return 'current-call';
     return 'online';
@@ -1135,6 +1411,11 @@ class DoorlockCard extends LitElement {
   _dismissCallPopup() {
     this._showCallPopup = false;
     this._callPopupDismissed = true;
+    this._callMinimized = false;
+  }
+
+  _expandCallPopup() {
+    this._callMinimized = false;
   }
 
   /* =============== Monitor Actions =============== */
@@ -1242,6 +1523,7 @@ class DoorlockCard extends LitElement {
       <div class="card">
         ${this._renderHeader(buildingName)}
         ${this._renderMainButtons()}
+        ${this._renderFooter()}
       </div>
       ${this._showIntercomPopup ? this._renderIntercomPopup() : ''}
       ${this._showMonitorSelector ? this._renderMonitorSelector() : ''}
@@ -1251,12 +1533,13 @@ class DoorlockCard extends LitElement {
   }
 
   _renderHeader(buildingName) {
+    const isConnected = this._connectionStatus !== 'disconnected';
     const statusText = this._callActive
       ? (this._callAnswered ? '通话中' : '呼叫中')
-      : '待机';
+      : (isConnected ? '在线' : '离线');
     const statusClass = this._callActive
       ? (this._callAnswered ? 'answered' : 'active')
-      : '';
+      : (isConnected ? 'online' : 'offline');
 
     return html`
       <div class="card-header">
@@ -1282,11 +1565,32 @@ class DoorlockCard extends LitElement {
     return html`
       <div class="main-buttons">
         <button class="main-btn" @click=${() => { this._showIntercomPopup = true; }}>
-          <span class="main-btn-label" style="font-size:16px;font-weight:600;">对讲</span>
+          <span class="main-btn-icon"><ha-icon icon="mdi:phone-in-talk-outline"></ha-icon></span>
+          <span class="main-btn-copy">
+            <span class="main-btn-label">对讲</span>
+            <span class="main-btn-sub">拨号与通话</span>
+          </span>
         </button>
-        <button class="main-btn" @click=${this._openMonitorSelector}>
-          <span class="main-btn-label" style="font-size:16px;font-weight:600;">监控</span>
+        <button class="main-btn monitor" @click=${this._openMonitorSelector}>
+          <span class="main-btn-icon"><ha-icon icon="mdi:cctv"></ha-icon></span>
+          <span class="main-btn-copy">
+            <span class="main-btn-label">监控</span>
+            <span class="main-btn-sub">查看门口机</span>
+          </span>
         </button>
+      </div>
+    `;
+  }
+
+  _renderFooter() {
+    const count = this._deviceCount || (Array.isArray(this._devices) ? this._devices.length : 0);
+    const activeText = this._callActive ? (this._displayName || '呼叫中') : '无活动呼叫';
+    const connectionText = this._connectionStatus === 'disconnected' ? '后端未连接' : '后端已连接';
+
+    return html`
+      <div class="card-footer">
+        <span>门口机 <strong>${count ? `${count} 台` : '—'}</strong></span>
+        <span>${connectionText} · ${activeText}</span>
       </div>
     `;
   }
@@ -1439,6 +1743,33 @@ class DoorlockCard extends LitElement {
     const labelClass = this._callAnswered ? 'answered' : '';
     const labelText = this._callAnswered ? '通话中' : '呼入中';
 
+    // 小窗模式（右下角画中画）
+    if (this._callMinimized) {
+      return html`
+        <div class="call-pip" @click=${this._expandCallPopup}>
+          <div class="call-pip-header">
+            <span class="call-pip-badge ${iconClass}">${labelText}</span>
+            <span class="call-pip-name">${this._displayName}</span>
+            <button class="call-pip-close" @click=${(e) => { e.stopPropagation(); this._dismissCallPopup(); }}>×</button>
+          </div>
+          <div class="call-pip-video">
+            ${this._cameraUrl
+              ? html`<img src="${this._cameraUrl}" alt="门禁视频" />`
+              : html`<div class="call-pip-placeholder">加载中...</div>`}
+          </div>
+          <div class="call-pip-actions">
+            <button class="action-btn unlock" @click=${(e) => { e.stopPropagation(); this._unlockDoor(); }}>
+              解锁
+            </button>
+            <button class="action-btn answer" @click=${(e) => { e.stopPropagation(); this._answerCall(); }}>
+              接听
+            </button>
+          </div>
+        </div>
+      `;
+    }
+
+    // 全屏弹窗模式
     return html`
       <div class="popup-overlay" @click=${(e) => { if (e.target === e.currentTarget) this._dismissCallPopup(); }}>
         <div class="popup">
@@ -1518,4 +1849,6 @@ class DoorlockCard extends LitElement {
   }
 }
 
-customElements.define('doorlock-card', DoorlockCard);
+if (!customElements.get('doorlock-card')) {
+  customElements.define('doorlock-card', DoorlockCard);
+}

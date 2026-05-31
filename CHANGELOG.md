@@ -1,5 +1,23 @@
 # 更新日志
 
+## v0.2.0
+
+- **新版主卡片 UI**
+  - 首页改为更清晰的深色玻璃卡片样式
+  - 状态从“待机”调整为“在线 / 离线 / 呼叫中 / 通话中”
+  - 底部状态改为“门口机 N 台”和“后端已连接 / 后端未连接”
+- **支持 UI 直接添加卡片**
+  - 新增 `window.customCards` 元数据，可在 HA 仪表盘编辑界面搜索添加
+- **WebSocket 实时通道**
+  - 优先连接 `/api/uppercoast_doorlock/ws` 获取实时视频帧和音频
+  - WebSocket 不可用时自动回退原 HTTP 轮询
+- **配置项增强**
+  - 新增 `entity` 和 `camera_entity` 配置
+  - 修复音频重复启动导致的多 interval / 多麦克风流问题
+- **仓库结构整理**
+  - `hacs.json` 修正为 `content_in_root: true`
+  - 新增 `assets/icon.png`，卡片图标资源随仓库发布
+
 ## v0.1.9
 
 - 卡片 header 图标替换为 logo 图片

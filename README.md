@@ -1,6 +1,6 @@
 # 云海湾门禁-Dashboard
 
-![version](https://img.shields.io/badge/release-v0.1.9-blue)
+![version](https://img.shields.io/badge/release-v0.2.0-blue)
 ![hacs](https://img.shields.io/badge/hacs-default-orange)
 ![ha-version](https://img.shields.io/badge/HA-2026.5.0%2B-41BDF5)
 
@@ -44,7 +44,6 @@
 
 ```yaml
 type: custom:doorlock-card
-building_id: building_1_a
 ```
 
 ### 配置选项
@@ -52,20 +51,8 @@ building_id: building_1_a
 | 参数 | 类型 | 必填 | 默认值 | 说明 |
 |------|------|------|--------|------|
 | `type` | string | 是 | - | 固定填写 `custom:doorlock-card` |
-| `building_id` | string | 否 | `building_1_a` | 楼栋 ID，详见下表 |
-
-### 楼栋 ID 对照表
-
-| ID | 楼栋 |
-|----|------|
-| `building_1_a` | 1 栋 A 座 |
-| `building_1_b` | 1 栋 B 座 |
-| `building_1_c` | 1 栋 C 座 |
-| `building_1_d` | 1 栋 D 座 |
-| `building_1_e` | 1 栋 E 座 |
-| `building_2_a` | 2 栋 A 座 |
-| `building_2_b` | 2 栋 B 座 |
-| `building_2_c` | 2 栋 C 座 |
+| `entity` | string | 否 | `binary_sensor.vds_call_status` | 门禁呼叫状态实体 |
+| `camera_entity` | string | 否 | `camera.vds_video` | 门禁视频实体 |
 
 ## 依赖
 

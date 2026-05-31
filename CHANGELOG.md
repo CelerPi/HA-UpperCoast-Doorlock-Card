@@ -1,5 +1,11 @@
 # 更新日志
 
+## v0.2.1
+
+- **修复 HACS 列表图标不显示**
+  - 新增仓库根目录 `brand/icon.png` 和 `brand/logo.png`
+  - 保留原有 `icon.png` 和 `assets/icon.png`，兼容卡片运行时资源
+
 ## v0.2.0
 
 - **新版主卡片 UI**
